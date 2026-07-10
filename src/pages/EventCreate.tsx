@@ -1,0 +1,493 @@
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import {
+  ArrowLeft, CalendarIcon, Save, Navigation, X, Loader2,
+  Info, MapPin, Wallet, Users, Target, UsersRound, Clock,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Geolocation } from "@capacitor/geolocation";
+
+const EVENT_TYPES = ["Sales Promotion", "Awareness Campaign", "Retail Activation", "Others"];
+
+interface ProfileOption { id: string; full_name: string }
+
+export default function EventCreate() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+
+  // Basic
+  const [eventName, setEventName] = useState("");
+  const [eventType, setEventType] = useState("Sales Promotion");
+  const [description, setDescription] = useState("");
+  const [comments, setComments] = useState("");
+  const [startDate, setStartDate] = useState<Date | undefined>(new Date());
+  const [endDate, setEndDate] = useState<Date | undefined>(new Date());
+  const [startTime, setStartTime] = useState("10:00");
+  const [endTime, setEndTime] = useState("20:00");
+
+  // Location
+  const [address, setAddress] = useState("");
+  const [landmark, setLandmark] = useState("");
+  const [latitude, setLatitude] = useState<string>("");
+  const [longitude, setLongitude] = useState<string>("");
+  const [capturingGPS, setCapturingGPS] = useState(false);
+
+  // Budget
+  const [budget, setBudget] = useState("");
+  const [salesTarget, setSalesTarget] = useState("");
+  const [expectedFootfall, setExpectedFootfall] = useState("");
+
+  // Team
+  const [selectedReps, setSelectedReps] = useState<ProfileOption[]>([]);
+  const [repPickerOpen, setRepPickerOpen] = useState(false);
+
+  const { data: profiles = [] } = useQuery({
+    queryKey: ["profiles-event-team"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, full_name").order("full_name");
+      return (data || []) as ProfileOption[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const availableReps = useMemo(
+    () => profiles.filter((p) => !selectedReps.some((s) => s.id === p.id)),
+    [profiles, selectedReps]
+  );
+
+  const captureLocation = async () => {
+    setCapturingGPS(true);
+    try {
+      try {
+        const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
+        setLatitude(pos.coords.latitude.toFixed(4));
+        setLongitude(pos.coords.longitude.toFixed(4));
+        toast.success("Location captured");
+      } catch {
+        if (!navigator.geolocation) throw new Error("no geo");
+        await new Promise<void>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            (p) => {
+              setLatitude(p.coords.latitude.toFixed(4));
+              setLongitude(p.coords.longitude.toFixed(4));
+              toast.success("Location captured");
+              resolve();
+            },
+            () => reject(),
+            { enableHighAccuracy: true, timeout: 10000 }
+          );
+        });
+      }
+    } catch {
+      toast.error("Unable to capture location");
+    } finally {
+      setCapturingGPS(false);
+    }
+  };
+
+  const addRep = (id: string) => {
+    const p = profiles.find((x) => x.id === id);
+    if (p) setSelectedReps((prev) => [...prev, p]);
+    setRepPickerOpen(false);
+  };
+  const removeRep = (id: string) => setSelectedReps((prev) => prev.filter((p) => p.id !== id));
+
+  const validate = (): string | null => {
+    if (!eventName.trim()) return "Event Name is required";
+    if (!startDate) return "Start Date is required";
+    if (!endDate) return "End Date is required";
+    if (endDate < startDate) return "End Date must be on or after Start Date";
+    if (!address.trim()) return "Address is required";
+    if (!budget || isNaN(Number(budget))) return "Budget is required and must be numeric";
+    if (salesTarget && isNaN(Number(salesTarget))) return "Sales Target must be numeric";
+    if (selectedReps.length === 0) return "At least one Sales Rep is required";
+    if (!/^\d{2}:\d{2}$/.test(startTime) || !/^\d{2}:\d{2}$/.test(endTime)) return "Invalid time format";
+    return null;
+  };
+
+  const handleSave = async () => {
+    if (!user?.id) { toast.error("Please log in"); return; }
+    const err = validate();
+    if (err) { toast.error(err); return; }
+
+    setSubmitting(true);
+    try {
+      const startDateStr = format(startDate!, "yyyy-MM-dd");
+      const endDateStr = format(endDate!, "yyyy-MM-dd");
+      const isMulti = startDateStr !== endDateStr;
+
+      // 1) create visit
+      const { data: visit, error: vErr } = await supabase
+        .from("visits")
+        .insert({
+          user_id: user.id,
+          planned_date: startDateStr,
+          status: "planned",
+          visit_type: "activity",
+        } as any)
+        .select("id")
+        .single();
+      if (vErr) throw vErr;
+
+      // 2) create activity_event
+      const startISO = new Date(`${startDateStr}T${startTime}:00`).toISOString();
+      const endISO = new Date(`${endDateStr}T${endTime}:00`).toISOString();
+
+      const { error: aErr } = await supabase.from("activity_events").insert({
+        visit_id: visit.id,
+        user_id: user.id,
+        activity_type: "Event",
+        activity_name: eventName,
+        event_name: eventName,
+        description: description || null,
+        comments: comments || null,
+        duration_type: isMulti ? "multiple_days" : "hour_based",
+        activity_date: startDateStr,
+        from_date: isMulti ? startDateStr : null,
+        to_date: isMulti ? endDateStr : null,
+        total_days: isMulti
+          ? Math.max(1, Math.round((endDate!.getTime() - startDate!.getTime()) / 86400000) + 1)
+          : 1,
+        start_time: startISO,
+        end_time: endISO,
+        activity_place: address,
+        landmark: landmark || null,
+        start_latitude: latitude ? Number(latitude) : null,
+        start_longitude: longitude ? Number(longitude) : null,
+        budget: Number(budget),
+        sales_target: salesTarget ? Number(salesTarget) : null,
+        expected_footfall: expectedFootfall || null,
+        sales_reps: selectedReps.map((r) => r.id),
+        remarks: `${eventType}${description ? ` — ${description}` : ""}`,
+      } as any);
+      if (aErr) {
+        await supabase.from("visits").delete().eq("id", visit.id);
+        throw aErr;
+      }
+
+      toast.success("Event created successfully");
+      window.dispatchEvent(new Event("visitDataChanged"));
+      navigate("/visits/retailers");
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to create event");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputCls =
+    "h-9 text-sm rounded-lg border-border/70 bg-background focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary";
+
+  return (
+    <div className="min-h-screen bg-slate-50/60 dark:bg-muted/20">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-background/90 backdrop-blur border-b border-border/60">
+        <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(-1)} aria-label="Back">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="min-w-0">
+              <h1 className="text-[15px] font-semibold leading-tight tracking-tight">Event Details</h1>
+              <p className="text-[11px] text-muted-foreground leading-tight">Add event information</p>
+            </div>
+          </div>
+          <Button
+            onClick={handleSave}
+            disabled={submitting}
+            className="h-9 px-4 rounded-lg bg-gradient-to-b from-primary to-primary/90 shadow-sm hover:shadow"
+          >
+            {submitting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Save className="h-4 w-4 mr-1.5" />}
+            Save
+          </Button>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto p-4 space-y-3">
+        {/* Basic Information */}
+        <SectionCard icon={<Info className="h-3.5 w-3.5" />} title="Basic Information">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+            <Field label="Event Name" required>
+              <Input className={inputCls} value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder="e.g. Big Deal Mela" />
+            </Field>
+            <Field label="Event Type">
+              <Select value={eventType} onValueChange={setEventType}>
+                <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {EVENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Field>
+            <div className="md:col-span-2">
+              <Field label="Description">
+                <Textarea
+                  className="min-h-[60px] text-sm rounded-lg border-border/70 bg-background focus-visible:ring-1 focus-visible:ring-primary"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description of the event"
+                  rows={2}
+                />
+              </Field>
+            </div>
+            <div className="md:col-span-2">
+              <Field label="Comments">
+                <Textarea
+                  className="min-h-[60px] text-sm rounded-lg border-border/70 bg-background focus-visible:ring-1 focus-visible:ring-primary"
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  placeholder="Additional comments or notes"
+                  rows={2}
+                />
+              </Field>
+            </div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
+            <Field label="Start Date" required>
+              <DatePopover date={startDate} onChange={setStartDate} />
+            </Field>
+            <Field label="End Date" required>
+              <DatePopover date={endDate} onChange={setEndDate} />
+            </Field>
+            <Field label="Time">
+              <div className="flex items-center gap-1.5">
+                <div className="relative flex-1">
+                  <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/70 pointer-events-none" />
+                  <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className={cn(inputCls, "pl-7")} />
+                </div>
+                <span className="text-muted-foreground text-xs">to</span>
+                <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={inputCls} />
+              </div>
+            </Field>
+          </div>
+        </SectionCard>
+
+        {/* Location */}
+        <SectionCard
+          icon={<MapPin className="h-3.5 w-3.5" />}
+          title="Location"
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={captureLocation}
+              disabled={capturingGPS}
+              className="h-7 px-2.5 text-xs rounded-md"
+            >
+              {capturingGPS ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Navigation className="h-3.5 w-3.5 mr-1" />}
+              Use Current Location
+            </Button>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+            <Field label="Address" required>
+              <Input className={inputCls} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full address" />
+            </Field>
+            <Field label="Landmark">
+              <Input className={inputCls} value={landmark} onChange={(e) => setLandmark(e.target.value)} placeholder="Nearby landmark" />
+            </Field>
+            <div className="md:col-span-2 grid grid-cols-2 gap-x-4 gap-y-3">
+              <Field label="Latitude (Optional)">
+                <Input className={inputCls} type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value)} />
+              </Field>
+              <Field label="Longitude (Optional)">
+                <Input className={inputCls} type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value)} />
+              </Field>
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* Budget & Targets — KPI style */}
+        <SectionCard icon={<Wallet className="h-3.5 w-3.5" />} title="Budget & Targets">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <KpiField
+              icon={<Wallet className="h-4 w-4" />}
+              tint="bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+              label="Budget (₹)"
+              required
+            >
+              <Input className={cn(inputCls, "text-base font-semibold placeholder:font-normal placeholder:text-muted-foreground/50")} type="number" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="25,000" />
+            </KpiField>
+            <KpiField
+              icon={<Target className="h-4 w-4" />}
+              tint="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+              label="Sales Target (₹)"
+            >
+              <Input className={cn(inputCls, "text-base font-semibold placeholder:font-normal placeholder:text-muted-foreground/50")} type="number" value={salesTarget} onChange={(e) => setSalesTarget(e.target.value)} placeholder="60,000" />
+            </KpiField>
+            <KpiField
+              icon={<UsersRound className="h-4 w-4" />}
+              tint="bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+              label="Expected Footfall"
+            >
+              <Input className={cn(inputCls, "text-base font-semibold placeholder:font-normal placeholder:text-muted-foreground/50")} value={expectedFootfall} onChange={(e) => setExpectedFootfall(e.target.value)} placeholder="500+" />
+            </KpiField>
+          </div>
+        </SectionCard>
+
+        {/* Team */}
+        <SectionCard icon={<Users className="h-3.5 w-3.5" />} title="Team">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+            <Field label="Sales Reps Involved" required>
+              <div className="rounded-lg border border-border/70 bg-background min-h-9 px-2 py-1.5 flex flex-wrap gap-1.5 items-center">
+                {selectedReps.map((r) => (
+                  <Badge
+                    key={r.id}
+                    variant="secondary"
+                    className="rounded-full pl-2 pr-1 py-0.5 gap-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/15 border-0"
+                  >
+                    {r.full_name}
+                    <button
+                      type="button"
+                      onClick={() => removeRep(r.id)}
+                      className="ml-0.5 rounded-full hover:bg-primary/20 p-0.5"
+                      aria-label={`Remove ${r.full_name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                {selectedReps.length === 0 && (
+                  <span className="text-xs text-muted-foreground px-1">No reps selected</span>
+                )}
+              </div>
+            </Field>
+            <Field label="Add More (Optional)">
+              <Popover open={repPickerOpen} onOpenChange={setRepPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn(inputCls, "w-full justify-between font-normal text-muted-foreground")}>
+                    Choose member
+                    <span className="text-[10px] text-muted-foreground/80">{availableReps.length} available</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search member..." />
+                    <CommandList>
+                      <CommandEmpty>No members found</CommandEmpty>
+                      <CommandGroup>
+                        {availableReps.map((p) => (
+                          <CommandItem key={p.id} value={p.full_name} onSelect={() => addRep(p.id)}>
+                            {p.full_name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </Field>
+          </div>
+        </SectionCard>
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({
+  icon,
+  title,
+  action,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="rounded-xl border border-border/60 shadow-sm bg-card">
+      <div className="flex items-center justify-between px-4 pt-3 pb-2.5 border-b border-border/50">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+            {icon}
+          </span>
+          <h2 className="text-[13px] font-semibold tracking-tight">{title}</h2>
+        </div>
+        {action}
+      </div>
+      <div className="px-4 py-3">{children}</div>
+    </Card>
+  );
+}
+
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <Label className="text-[11px] font-medium text-muted-foreground/90 uppercase tracking-wide">
+        {label} {required && <span className="text-destructive normal-case">*</span>}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
+function KpiField({
+  icon,
+  tint,
+  label,
+  required,
+  children,
+}: {
+  icon: React.ReactNode;
+  tint: string;
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-background/60 p-2.5 flex items-center gap-2.5">
+      <div className={cn("h-9 w-9 shrink-0 rounded-lg flex items-center justify-center", tint)}>
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0 space-y-0.5">
+        <Label className="text-[10px] font-medium text-muted-foreground/90 uppercase tracking-wide">
+          {label} {required && <span className="text-destructive normal-case">*</span>}
+        </Label>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function DatePopover({ date, onChange }: { date: Date | undefined; onChange: (d: Date | undefined) => void }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "h-9 w-full justify-start font-normal text-sm rounded-lg border-border/70",
+            !date && "text-muted-foreground"
+          )}
+        >
+          <CalendarIcon className="h-3.5 w-3.5 mr-2 opacity-60" />
+          {date ? format(date, "dd MMM yyyy") : "Pick a date"}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar mode="single" selected={date} onSelect={onChange} initialFocus className={cn("p-3 pointer-events-auto")} />
+      </PopoverContent>
+    </Popover>
+  );
+}
