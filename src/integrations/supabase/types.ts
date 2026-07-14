@@ -178,7 +178,7 @@ export type Database = {
           start_latitude: number | null
           start_longitude: number | null
           start_time: string | null
-          status: string | null
+          status: string
           subordinate_user_id: string | null
           survey_competition_brands: string | null
           survey_competitor_count: number | null
@@ -269,7 +269,7 @@ export type Database = {
           start_latitude?: number | null
           start_longitude?: number | null
           start_time?: string | null
-          status?: string | null
+          status?: string
           subordinate_user_id?: string | null
           survey_competition_brands?: string | null
           survey_competitor_count?: number | null
@@ -360,7 +360,7 @@ export type Database = {
           start_latitude?: number | null
           start_longitude?: number | null
           start_time?: string | null
-          status?: string | null
+          status?: string
           subordinate_user_id?: string | null
           survey_competition_brands?: string | null
           survey_competitor_count?: number | null
@@ -1459,7 +1459,7 @@ export type Database = {
           metadata: Json | null
           new_user_id: string | null
           old_user_id: string | null
-          performed_by: string | null
+          performed_by: string
         }
         Insert: {
           action: string
@@ -1469,7 +1469,7 @@ export type Database = {
           metadata?: Json | null
           new_user_id?: string | null
           old_user_id?: string | null
-          performed_by?: string | null
+          performed_by: string
         }
         Update: {
           action?: string
@@ -1479,7 +1479,7 @@ export type Database = {
           metadata?: Json | null
           new_user_id?: string | null
           old_user_id?: string | null
-          performed_by?: string | null
+          performed_by?: string
         }
         Relationships: []
       }
@@ -1680,7 +1680,7 @@ export type Database = {
         Insert: {
           average_km?: number | null
           average_time_minutes?: number | null
-          beat_id: string
+          beat_id?: string
           beat_name: string
           category?: string | null
           created_at?: string
@@ -3856,7 +3856,7 @@ export type Database = {
           barcode: string | null
           cgst_amount: number | null
           created_at: string | null
-          credit_note_id: string | null
+          credit_note_id: string
           hsn_code: string | null
           id: string
           original_invoice_number: string | null
@@ -3875,7 +3875,7 @@ export type Database = {
           barcode?: string | null
           cgst_amount?: number | null
           created_at?: string | null
-          credit_note_id?: string | null
+          credit_note_id: string
           hsn_code?: string | null
           id?: string
           original_invoice_number?: string | null
@@ -3894,7 +3894,7 @@ export type Database = {
           barcode?: string | null
           cgst_amount?: number | null
           created_at?: string | null
-          credit_note_id?: string | null
+          credit_note_id?: string
           hsn_code?: string | null
           id?: string
           original_invoice_number?: string | null
@@ -3941,12 +3941,12 @@ export type Database = {
           id: string
           original_order_id: string | null
           posted_to_ledger: boolean
-          reason: string | null
+          reason: string
           reason_notes: string | null
           retailer_id: string | null
           retailer_name: string | null
           sgst_total: number | null
-          status: string | null
+          status: string
           sub_total: number | null
           total_amount: number | null
           updated_at: string | null
@@ -3965,12 +3965,12 @@ export type Database = {
           id?: string
           original_order_id?: string | null
           posted_to_ledger?: boolean
-          reason?: string | null
+          reason?: string
           reason_notes?: string | null
           retailer_id?: string | null
           retailer_name?: string | null
           sgst_total?: number | null
-          status?: string | null
+          status?: string
           sub_total?: number | null
           total_amount?: number | null
           updated_at?: string | null
@@ -3989,12 +3989,12 @@ export type Database = {
           id?: string
           original_order_id?: string | null
           posted_to_ledger?: boolean
-          reason?: string | null
+          reason?: string
           reason_notes?: string | null
           retailer_id?: string | null
           retailer_name?: string | null
           sgst_total?: number | null
-          status?: string | null
+          status?: string
           sub_total?: number | null
           total_amount?: number | null
           updated_at?: string | null
@@ -4693,28 +4693,28 @@ export type Database = {
       }
       device_battery_logs: {
         Row: {
-          battery_level: number | null
-          created_at: string | null
+          battery_level: number
+          created_at: string
           id: string
-          is_charging: boolean | null
+          is_charging: boolean
           recorded_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
-          battery_level?: number | null
-          created_at?: string | null
+          battery_level: number
+          created_at?: string
           id?: string
-          is_charging?: boolean | null
+          is_charging?: boolean
           recorded_at?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
-          battery_level?: number | null
-          created_at?: string | null
+          battery_level?: number
+          created_at?: string
           id?: string
-          is_charging?: boolean | null
+          is_charging?: boolean
           recorded_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -4761,7 +4761,7 @@ export type Database = {
       }
       distributor_beat_mappings: {
         Row: {
-          beat_id: string | null
+          beat_id: string
           created_at: string
           created_by: string | null
           distributor_id: string
@@ -4769,7 +4769,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          beat_id?: string | null
+          beat_id: string
           created_at?: string
           created_by?: string | null
           distributor_id: string
@@ -4777,7 +4777,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          beat_id?: string | null
+          beat_id?: string
           created_at?: string
           created_by?: string | null
           distributor_id?: string
@@ -5616,14 +5616,14 @@ export type Database = {
           location: string | null
           manufacturing_date: string | null
           max_stock_level: number | null
-          product_id: string
+          product_id: string | null
           product_name: string
           quantity: number
           reorder_level: number | null
           reserved_quantity: number
           sku: string | null
           total_value: number | null
-          unit: string
+          unit: string | null
           unit_cost: number | null
           updated_at: string
           variant_id: string | null
@@ -5644,14 +5644,14 @@ export type Database = {
           location?: string | null
           manufacturing_date?: string | null
           max_stock_level?: number | null
-          product_id: string
+          product_id?: string | null
           product_name: string
           quantity?: number
           reorder_level?: number | null
           reserved_quantity?: number
           sku?: string | null
           total_value?: number | null
-          unit?: string
+          unit?: string | null
           unit_cost?: number | null
           updated_at?: string
           variant_id?: string | null
@@ -5672,14 +5672,14 @@ export type Database = {
           location?: string | null
           manufacturing_date?: string | null
           max_stock_level?: number | null
-          product_id?: string
+          product_id?: string | null
           product_name?: string
           quantity?: number
           reorder_level?: number | null
           reserved_quantity?: number
           sku?: string | null
           total_value?: number | null
-          unit?: string
+          unit?: string | null
           unit_cost?: number | null
           updated_at?: string
           variant_id?: string | null
@@ -5727,14 +5727,14 @@ export type Database = {
           expiry_date: string | null
           id: string
           notes: string | null
-          product_id: string
+          product_id: string | null
           product_name: string | null
           quantity: number
           reference_id: string | null
           reference_number: string | null
           reference_type: string | null
           running_balance: number | null
-          transaction_type: string
+          transaction_type: string | null
           unit: string | null
           unit_cost: number | null
           variant_id: string | null
@@ -5749,14 +5749,14 @@ export type Database = {
           expiry_date?: string | null
           id?: string
           notes?: string | null
-          product_id: string
+          product_id?: string | null
           product_name?: string | null
           quantity: number
           reference_id?: string | null
           reference_number?: string | null
           reference_type?: string | null
           running_balance?: number | null
-          transaction_type: string
+          transaction_type?: string | null
           unit?: string | null
           unit_cost?: number | null
           variant_id?: string | null
@@ -5771,14 +5771,14 @@ export type Database = {
           expiry_date?: string | null
           id?: string
           notes?: string | null
-          product_id?: string
+          product_id?: string | null
           product_name?: string | null
           quantity?: number
           reference_id?: string | null
           reference_number?: string | null
           reference_type?: string | null
           running_balance?: number | null
-          transaction_type?: string
+          transaction_type?: string | null
           unit?: string | null
           unit_cost?: number | null
           variant_id?: string | null
@@ -6115,7 +6115,7 @@ export type Database = {
           created_at: string
           credit_days: number
           credit_limit: number
-          distributor_id: string
+          distributor_id: string | null
           id: string
           is_active: boolean
           retailer_id: string
@@ -6125,7 +6125,7 @@ export type Database = {
           created_at?: string
           credit_days?: number
           credit_limit?: number
-          distributor_id: string
+          distributor_id?: string | null
           id?: string
           is_active?: boolean
           retailer_id: string
@@ -6135,7 +6135,7 @@ export type Database = {
           created_at?: string
           credit_days?: number
           credit_limit?: number
-          distributor_id?: string
+          distributor_id?: string | null
           id?: string
           is_active?: boolean
           retailer_id?: string
@@ -7076,6 +7076,13 @@ export type Database = {
           years_of_relationship?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "distributors_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "distributors_parent_id_fkey"
             columns: ["parent_id"]
@@ -8632,10 +8639,10 @@ export type Database = {
           game_id: string | null
           id: string
           metadata: Json | null
-          points: number | null
+          points: number
           reference_id: string | null
           reference_type: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           action_id?: string | null
@@ -8643,10 +8650,10 @@ export type Database = {
           game_id?: string | null
           id?: string
           metadata?: Json | null
-          points?: number | null
+          points: number
           reference_id?: string | null
           reference_type?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           action_id?: string | null
@@ -8654,10 +8661,10 @@ export type Database = {
           game_id?: string | null
           id?: string
           metadata?: Json | null
-          points?: number | null
+          points?: number
           reference_id?: string | null
           reference_type?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -8765,7 +8772,7 @@ export type Database = {
       geocoding_jobs: {
         Row: {
           address: string | null
-          created_at: string | null
+          created_at: string
           error_message: string | null
           failed_count: number
           geocoded_count: number
@@ -8773,13 +8780,13 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           processed_records: number
-          status: string | null
+          status: string
           total_records: number
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           address?: string | null
-          created_at?: string | null
+          created_at?: string
           error_message?: string | null
           failed_count?: number
           geocoded_count?: number
@@ -8787,13 +8794,13 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           processed_records?: number
-          status?: string | null
+          status?: string
           total_records?: number
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           address?: string | null
-          created_at?: string | null
+          created_at?: string
           error_message?: string | null
           failed_count?: number
           geocoded_count?: number
@@ -8801,9 +8808,9 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           processed_records?: number
-          status?: string | null
+          status?: string
           total_records?: number
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -11259,7 +11266,7 @@ export type Database = {
         Row: {
           allow_negative_balance: boolean | null
           carry_forward_expiry_months: number | null
-          created_at: string | null
+          created_at: string
           custom_reset_cycle: string | null
           enable_carry_forward: boolean | null
           id: string
@@ -11275,7 +11282,7 @@ export type Database = {
         Insert: {
           allow_negative_balance?: boolean | null
           carry_forward_expiry_months?: number | null
-          created_at?: string | null
+          created_at?: string
           custom_reset_cycle?: string | null
           enable_carry_forward?: boolean | null
           id?: string
@@ -11291,7 +11298,7 @@ export type Database = {
         Update: {
           allow_negative_balance?: boolean | null
           carry_forward_expiry_months?: number | null
-          created_at?: string | null
+          created_at?: string
           custom_reset_cycle?: string | null
           enable_carry_forward?: boolean | null
           id?: string
@@ -11517,7 +11524,7 @@ export type Database = {
           id: string
           is_active: boolean
           message_template: string
-          name: string
+          name: string | null
           notification_channel: string
           receiver_role: string | null
           receiver_type: string
@@ -11535,7 +11542,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           message_template?: string
-          name: string
+          name?: string | null
           notification_channel?: string
           receiver_role?: string | null
           receiver_type?: string
@@ -11553,7 +11560,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           message_template?: string
-          name?: string
+          name?: string | null
           notification_channel?: string
           receiver_role?: string | null
           receiver_type?: string
@@ -12086,7 +12093,7 @@ export type Database = {
           product_id?: string | null
           product_name?: string | null
           quantity: number
-          rate?: number
+          rate: number
           sgst_amount?: number | null
           sgst_rate?: number | null
           tax_master_id?: string | null
@@ -12282,7 +12289,7 @@ export type Database = {
           sales_channel?: string
           short_items?: Json | null
           status?: string
-          subtotal?: number
+          subtotal: number
           territory_id?: string | null
           total_amount: number
           updated_at?: string
@@ -12412,15 +12419,15 @@ export type Database = {
           agent_id: string | null
           beat_ids: string[] | null
           completed_at: string | null
-          created_at: string | null
+          created_at: string
           dispatched_at: string | null
           id: string
-          order_count: number | null
-          packing_list_id: string | null
-          status: string | null
+          order_count: number
+          packing_list_id: string
+          status: string
           territory_ids: string[] | null
-          total_load_qty: number | null
-          total_load_value: number | null
+          total_load_qty: number
+          total_load_value: number
           updated_at: string
           van_id: string | null
         }
@@ -12428,15 +12435,15 @@ export type Database = {
           agent_id?: string | null
           beat_ids?: string[] | null
           completed_at?: string | null
-          created_at?: string | null
+          created_at?: string
           dispatched_at?: string | null
           id?: string
-          order_count?: number | null
-          packing_list_id?: string | null
-          status?: string | null
+          order_count?: number
+          packing_list_id: string
+          status?: string
           territory_ids?: string[] | null
-          total_load_qty?: number | null
-          total_load_value?: number | null
+          total_load_qty?: number
+          total_load_value?: number
           updated_at?: string
           van_id?: string | null
         }
@@ -12444,15 +12451,15 @@ export type Database = {
           agent_id?: string | null
           beat_ids?: string[] | null
           completed_at?: string | null
-          created_at?: string | null
+          created_at?: string
           dispatched_at?: string | null
           id?: string
-          order_count?: number | null
-          packing_list_id?: string | null
-          status?: string | null
+          order_count?: number
+          packing_list_id?: string
+          status?: string
           territory_ids?: string[] | null
-          total_load_qty?: number | null
-          total_load_value?: number | null
+          total_load_qty?: number
+          total_load_value?: number
           updated_at?: string
           van_id?: string | null
         }
@@ -12585,15 +12592,15 @@ export type Database = {
           base_qty: number | null
           batch_number: string | null
           conversion_to_base: number | null
-          created_at: string | null
+          created_at: string
           expiry_date: string | null
           id: string
-          ordered_qty: number | null
+          ordered_qty: number
           packing_list_id: string | null
-          picked_qty: number | null
+          picked_qty: number
           product_id: string
           product_name: string
-          short_qty: number | null
+          short_qty: number
           unit: string | null
           uom_code: string | null
           uom_id: string | null
@@ -12604,15 +12611,15 @@ export type Database = {
           base_qty?: number | null
           batch_number?: string | null
           conversion_to_base?: number | null
-          created_at?: string | null
+          created_at?: string
           expiry_date?: string | null
           id?: string
-          ordered_qty?: number | null
+          ordered_qty?: number
           packing_list_id?: string | null
-          picked_qty?: number | null
+          picked_qty?: number
           product_id: string
           product_name: string
-          short_qty?: number | null
+          short_qty?: number
           unit?: string | null
           uom_code?: string | null
           uom_id?: string | null
@@ -12623,15 +12630,15 @@ export type Database = {
           base_qty?: number | null
           batch_number?: string | null
           conversion_to_base?: number | null
-          created_at?: string | null
+          created_at?: string
           expiry_date?: string | null
           id?: string
-          ordered_qty?: number | null
+          ordered_qty?: number
           packing_list_id?: string | null
-          picked_qty?: number | null
+          picked_qty?: number
           product_id?: string
           product_name?: string
-          short_qty?: number | null
+          short_qty?: number
           unit?: string | null
           uom_code?: string | null
           uom_id?: string | null
@@ -12708,7 +12715,7 @@ export type Database = {
           pod_signature_url: string | null
           route_id: string | null
           status: string
-          total_items: number | null
+          total_items: number
           total_orders: number | null
           total_packages: number | null
           total_value: number | null
@@ -12749,7 +12756,7 @@ export type Database = {
           pod_signature_url?: string | null
           route_id?: string | null
           status?: string
-          total_items?: number | null
+          total_items?: number
           total_orders?: number | null
           total_packages?: number | null
           total_value?: number | null
@@ -12790,7 +12797,7 @@ export type Database = {
           pod_signature_url?: string | null
           route_id?: string | null
           status?: string
-          total_items?: number | null
+          total_items?: number
           total_orders?: number | null
           total_packages?: number | null
           total_value?: number | null
@@ -13061,9 +13068,9 @@ export type Database = {
           can_read: boolean
           can_view_all: boolean
           created_at: string
-          group_id: string | null
+          group_id: string
           id: string
-          object_name: string | null
+          object_name: string
           permission_key: string | null
         }
         Insert: {
@@ -13074,9 +13081,9 @@ export type Database = {
           can_read?: boolean
           can_view_all?: boolean
           created_at?: string
-          group_id?: string | null
+          group_id: string
           id?: string
-          object_name?: string | null
+          object_name: string
           permission_key?: string | null
         }
         Update: {
@@ -13087,9 +13094,9 @@ export type Database = {
           can_read?: boolean
           can_view_all?: boolean
           created_at?: string
-          group_id?: string | null
+          group_id?: string
           id?: string
-          object_name?: string | null
+          object_name?: string
           permission_key?: string | null
         }
         Relationships: [
@@ -13105,21 +13112,21 @@ export type Database = {
       permission_set_group_users: {
         Row: {
           created_at: string
-          group_id: string | null
+          group_id: string
           id: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string
-          group_id?: string | null
+          group_id: string
           id?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string
-          group_id?: string | null
+          group_id?: string
           id?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -13133,24 +13140,24 @@ export type Database = {
       }
       permission_set_groups: {
         Row: {
-          created_at: string | null
+          created_at: string
           description: string | null
           id: string
-          name: string | null
+          name: string
           updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           description?: string | null
           id?: string
-          name?: string | null
+          name: string
           updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           description?: string | null
           id?: string
-          name?: string | null
+          name?: string
           updated_at?: string
         }
         Relationships: []
@@ -13464,33 +13471,33 @@ export type Database = {
       pm_ai_insights: {
         Row: {
           content: Json
-          created_at: string | null
+          created_at: string
           created_by: string | null
           expires_at: string | null
           id: string
           insight_text: string | null
-          insight_type: string | null
-          project_id: string | null
+          insight_type: string
+          project_id: string
         }
         Insert: {
           content?: Json
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
           expires_at?: string | null
           id?: string
           insight_text?: string | null
-          insight_type?: string | null
-          project_id?: string | null
+          insight_type: string
+          project_id: string
         }
         Update: {
           content?: Json
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
           expires_at?: string | null
           id?: string
           insight_text?: string | null
-          insight_type?: string | null
-          project_id?: string | null
+          insight_type?: string
+          project_id?: string
         }
         Relationships: [
           {
@@ -13505,41 +13512,41 @@ export type Database = {
       pm_ideas: {
         Row: {
           ai_evaluation: Json | null
-          created_at: string | null
+          created_at: string
           created_by: string | null
           description: string | null
           id: string
           priority: string | null
-          project_id: string | null
+          project_id: string
           status: string
-          submitted_by: string | null
-          title: string | null
+          submitted_by: string
+          title: string
           updated_at: string
         }
         Insert: {
           ai_evaluation?: Json | null
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           priority?: string | null
-          project_id?: string | null
+          project_id: string
           status?: string
-          submitted_by?: string | null
-          title?: string | null
+          submitted_by: string
+          title: string
           updated_at?: string
         }
         Update: {
           ai_evaluation?: Json | null
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
           description?: string | null
           id?: string
           priority?: string | null
-          project_id?: string | null
+          project_id?: string
           status?: string
-          submitted_by?: string | null
-          title?: string | null
+          submitted_by?: string
+          title?: string
           updated_at?: string
         }
         Relationships: [
@@ -13562,42 +13569,42 @@ export type Database = {
       pm_knowledge_documents: {
         Row: {
           content: string | null
-          created_at: string | null
+          created_at: string
           description: string | null
-          document_name: string | null
+          document_name: string
           file_name: string | null
           file_url: string | null
           id: string
-          project_id: string | null
+          project_id: string
           title: string | null
           updated_at: string
-          uploaded_by: string | null
+          uploaded_by: string
         }
         Insert: {
           content?: string | null
-          created_at?: string | null
+          created_at?: string
           description?: string | null
-          document_name?: string | null
+          document_name: string
           file_name?: string | null
           file_url?: string | null
           id?: string
-          project_id?: string | null
+          project_id: string
           title?: string | null
           updated_at?: string
-          uploaded_by?: string | null
+          uploaded_by: string
         }
         Update: {
           content?: string | null
-          created_at?: string | null
+          created_at?: string
           description?: string | null
-          document_name?: string | null
+          document_name?: string
           file_name?: string | null
           file_url?: string | null
           id?: string
-          project_id?: string | null
+          project_id?: string
           title?: string | null
           updated_at?: string
-          uploaded_by?: string | null
+          uploaded_by?: string
         }
         Relationships: [
           {
@@ -13706,10 +13713,10 @@ export type Database = {
         Row: {
           budget_allocated: number | null
           cost_rate: number | null
-          created_at: string | null
+          created_at: string
           deployment_type: string
           id: string
-          project_id: string | null
+          project_id: string
           release_date: string | null
           resource_name: string | null
           role: string
@@ -13717,15 +13724,15 @@ export type Database = {
           start_date: string | null
           updated_at: string
           url: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           budget_allocated?: number | null
           cost_rate?: number | null
-          created_at?: string | null
+          created_at?: string
           deployment_type?: string
           id?: string
-          project_id?: string | null
+          project_id: string
           release_date?: string | null
           resource_name?: string | null
           role?: string
@@ -13733,15 +13740,15 @@ export type Database = {
           start_date?: string | null
           updated_at?: string
           url?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           budget_allocated?: number | null
           cost_rate?: number | null
-          created_at?: string | null
+          created_at?: string
           deployment_type?: string
           id?: string
-          project_id?: string | null
+          project_id?: string
           release_date?: string | null
           resource_name?: string | null
           role?: string
@@ -13749,7 +13756,7 @@ export type Database = {
           start_date?: string | null
           updated_at?: string
           url?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -13918,27 +13925,27 @@ export type Database = {
           color: string | null
           created_at: string
           id: string
-          name: string | null
-          position: number | null
-          project_id: string | null
+          name: string
+          position: number
+          project_id: string
           updated_at: string
         }
         Insert: {
           color?: string | null
           created_at?: string
           id?: string
-          name?: string | null
-          position?: number | null
-          project_id?: string | null
+          name: string
+          position?: number
+          project_id: string
           updated_at?: string
         }
         Update: {
           color?: string | null
           created_at?: string
           id?: string
-          name?: string | null
-          position?: number | null
-          project_id?: string | null
+          name?: string
+          position?: number
+          project_id?: string
           updated_at?: string
         }
         Relationships: [
@@ -14057,36 +14064,36 @@ export type Database = {
       }
       pm_task_attachments: {
         Row: {
-          created_at: string | null
-          file_name: string | null
+          created_at: string
+          file_name: string
           file_size: number | null
           file_type: string | null
-          file_url: string | null
+          file_url: string
           id: string
           note: string | null
-          task_id: string | null
+          task_id: string
           uploaded_by: string | null
         }
         Insert: {
-          created_at?: string | null
-          file_name?: string | null
+          created_at?: string
+          file_name: string
           file_size?: number | null
           file_type?: string | null
-          file_url?: string | null
+          file_url: string
           id?: string
           note?: string | null
-          task_id?: string | null
+          task_id: string
           uploaded_by?: string | null
         }
         Update: {
-          created_at?: string | null
-          file_name?: string | null
+          created_at?: string
+          file_name?: string
           file_size?: number | null
           file_type?: string | null
-          file_url?: string | null
+          file_url?: string
           id?: string
           note?: string | null
-          task_id?: string | null
+          task_id?: string
           uploaded_by?: string | null
         }
         Relationships: [
@@ -14110,20 +14117,20 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          task_id: string | null
-          user_id: string | null
+          task_id: string
+          user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          task_id?: string | null
-          user_id?: string | null
+          task_id: string
+          user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          task_id?: string | null
-          user_id?: string | null
+          task_id?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -14434,42 +14441,42 @@ export type Database = {
       pm_template_attachments: {
         Row: {
           created_at: string
-          file_name: string | null
+          file_name: string
           file_size: number | null
           file_type: string | null
-          file_url: string | null
+          file_url: string
           id: string
           note: string | null
-          task_id: string | null
-          template_id: string | null
+          task_id: string
+          template_id: string
           template_task_id: string | null
-          uploaded_by: string | null
+          uploaded_by: string
         }
         Insert: {
           created_at?: string
-          file_name?: string | null
+          file_name: string
           file_size?: number | null
           file_type?: string | null
-          file_url?: string | null
+          file_url: string
           id?: string
           note?: string | null
-          task_id?: string | null
-          template_id?: string | null
+          task_id: string
+          template_id: string
           template_task_id?: string | null
-          uploaded_by?: string | null
+          uploaded_by: string
         }
         Update: {
           created_at?: string
-          file_name?: string | null
+          file_name?: string
           file_size?: number | null
           file_type?: string | null
-          file_url?: string | null
+          file_url?: string
           id?: string
           note?: string | null
-          task_id?: string | null
-          template_id?: string | null
+          task_id?: string
+          template_id?: string
           template_task_id?: string | null
-          uploaded_by?: string | null
+          uploaded_by?: string
         }
         Relationships: [
           {
@@ -14492,26 +14499,26 @@ export type Database = {
         Row: {
           created_at: string
           dependency_type: string
-          depends_on_task_id: string | null
+          depends_on_task_id: string
           id: string
-          task_id: string | null
-          template_id: string | null
+          task_id: string
+          template_id: string
         }
         Insert: {
           created_at?: string
           dependency_type?: string
-          depends_on_task_id?: string | null
+          depends_on_task_id: string
           id?: string
-          task_id?: string | null
-          template_id?: string | null
+          task_id: string
+          template_id: string
         }
         Update: {
           created_at?: string
           dependency_type?: string
-          depends_on_task_id?: string | null
+          depends_on_task_id?: string
           id?: string
-          task_id?: string | null
-          template_id?: string | null
+          task_id?: string
+          template_id?: string
         }
         Relationships: [
           {
@@ -14542,25 +14549,25 @@ export type Database = {
           color: string
           created_at: string
           id: string
-          name: string | null
+          name: string
           position: number
-          template_id: string | null
+          template_id: string
         }
         Insert: {
           color?: string
           created_at?: string
           id?: string
-          name?: string | null
+          name: string
           position?: number
-          template_id?: string | null
+          template_id: string
         }
         Update: {
           color?: string
           created_at?: string
           id?: string
-          name?: string | null
+          name?: string
           position?: number
-          template_id?: string | null
+          template_id?: string
         }
         Relationships: [
           {
@@ -14585,9 +14592,9 @@ export type Database = {
           section_id: string | null
           sort_order: number
           tags: string[] | null
-          template_id: string | null
+          template_id: string
           template_section_id: string | null
-          title: string | null
+          title: string
           type: string
         }
         Insert: {
@@ -14602,9 +14609,9 @@ export type Database = {
           section_id?: string | null
           sort_order?: number
           tags?: string[] | null
-          template_id?: string | null
+          template_id: string
           template_section_id?: string | null
-          title?: string | null
+          title: string
           type?: string
         }
         Update: {
@@ -14619,9 +14626,9 @@ export type Database = {
           section_id?: string | null
           sort_order?: number
           tags?: string[] | null
-          template_id?: string | null
+          template_id?: string
           template_section_id?: string | null
-          title?: string | null
+          title?: string
           type?: string
         }
         Relationships: [
@@ -14650,27 +14657,27 @@ export type Database = {
       }
       pm_templates: {
         Row: {
-          created_at: string | null
+          created_at: string
           created_by: string
           description: string | null
           id: string
-          name: string | null
+          name: string
           updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           created_by: string
           description?: string | null
           id?: string
-          name?: string | null
+          name: string
           updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           created_by?: string
           description?: string | null
           id?: string
-          name?: string | null
+          name?: string
           updated_at?: string
         }
         Relationships: []
@@ -15941,7 +15948,7 @@ export type Database = {
           net_weight_g: number | null
           price: number
           price_basis_uom_id: string | null
-          product_id: string | null
+          product_id: string
           product_type: string | null
           qr_code: string | null
           reorder_level: number | null
@@ -15955,7 +15962,7 @@ export type Database = {
           updated_at: string
           updated_by: string | null
           variant_cost: number | null
-          variant_name: string | null
+          variant_name: string
           variant_tax_rate: number | null
           variant_type: string | null
           variant_weight_g: number | null
@@ -15991,7 +15998,7 @@ export type Database = {
           net_weight_g?: number | null
           price?: number
           price_basis_uom_id?: string | null
-          product_id?: string | null
+          product_id: string
           product_type?: string | null
           qr_code?: string | null
           reorder_level?: number | null
@@ -16005,7 +16012,7 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           variant_cost?: number | null
-          variant_name?: string | null
+          variant_name: string
           variant_tax_rate?: number | null
           variant_type?: string | null
           variant_weight_g?: number | null
@@ -16041,7 +16048,7 @@ export type Database = {
           net_weight_g?: number | null
           price?: number
           price_basis_uom_id?: string | null
-          product_id?: string | null
+          product_id?: string
           product_type?: string | null
           qr_code?: string | null
           reorder_level?: number | null
@@ -16055,7 +16062,7 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           variant_cost?: number | null
-          variant_name?: string | null
+          variant_name?: string
           variant_tax_rate?: number | null
           variant_type?: string | null
           variant_weight_g?: number | null
@@ -16379,8 +16386,8 @@ export type Database = {
           emergency_contact_phone: string | null
           facebook_url: string | null
           full_name: string
-          hint_answer: string
-          hint_question: string
+          hint_answer: string | null
+          hint_question: string | null
           id: string
           instagram_url: string | null
           interests: string[] | null
@@ -16415,8 +16422,8 @@ export type Database = {
           emergency_contact_phone?: string | null
           facebook_url?: string | null
           full_name: string
-          hint_answer: string
-          hint_question: string
+          hint_answer?: string | null
+          hint_question?: string | null
           id: string
           instagram_url?: string | null
           interests?: string[] | null
@@ -16451,8 +16458,8 @@ export type Database = {
           emergency_contact_phone?: string | null
           facebook_url?: string | null
           full_name?: string
-          hint_answer?: string
-          hint_question?: string
+          hint_answer?: string | null
+          hint_question?: string | null
           id?: string
           instagram_url?: string | null
           interests?: string[] | null
@@ -24936,7 +24943,7 @@ export type Database = {
       }
       user_business_plan_territory_beats: {
         Row: {
-          beat_id: string | null
+          beat_id: string
           beat_name: string
           business_plan_id: string
           created_at: string
@@ -24947,7 +24954,7 @@ export type Database = {
           territory_id: string
         }
         Insert: {
-          beat_id?: string | null
+          beat_id: string
           beat_name: string
           business_plan_id: string
           created_at?: string
@@ -24958,7 +24965,7 @@ export type Database = {
           territory_id: string
         }
         Update: {
-          beat_id?: string | null
+          beat_id?: string
           beat_name?: string
           business_plan_id?: string
           created_at?: string
@@ -25151,7 +25158,7 @@ export type Database = {
           id: string
           recorded_at: string | null
           session_id: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           bytes_downloaded?: number | null
@@ -25161,7 +25168,7 @@ export type Database = {
           id?: string
           recorded_at?: string | null
           session_id?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           bytes_downloaded?: number | null
@@ -25171,7 +25178,7 @@ export type Database = {
           id?: string
           recorded_at?: string | null
           session_id?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -25539,33 +25546,33 @@ export type Database = {
           created_at: string | null
           duration_seconds: number | null
           id: string
-          module_name: string | null
+          module_name: string
           page: string | null
           page_path: string | null
           session_id: string | null
-          user_id: string | null
+          user_id: string
           visited_at: string | null
         }
         Insert: {
           created_at?: string | null
           duration_seconds?: number | null
           id?: string
-          module_name?: string | null
+          module_name: string
           page?: string | null
           page_path?: string | null
           session_id?: string | null
-          user_id?: string | null
+          user_id: string
           visited_at?: string | null
         }
         Update: {
           created_at?: string | null
           duration_seconds?: number | null
           id?: string
-          module_name?: string | null
+          module_name?: string
           page?: string | null
           page_path?: string | null
           session_id?: string | null
-          user_id?: string | null
+          user_id?: string
           visited_at?: string | null
         }
         Relationships: [
@@ -25814,7 +25821,7 @@ export type Database = {
           login_at: string | null
           logout_at: string | null
           session_token: string | null
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string | null
@@ -25824,7 +25831,7 @@ export type Database = {
           login_at?: string | null
           logout_at?: string | null
           session_token?: string | null
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string | null
@@ -25834,7 +25841,7 @@ export type Database = {
           login_at?: string | null
           logout_at?: string | null
           session_token?: string | null
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -25849,7 +25856,7 @@ export type Database = {
       van_beat_assignments: {
         Row: {
           assigned_date: string
-          beat_id: string | null
+          beat_id: string
           created_at: string
           created_by: string | null
           id: string
@@ -25859,7 +25866,7 @@ export type Database = {
         }
         Insert: {
           assigned_date?: string
-          beat_id?: string | null
+          beat_id: string
           created_at?: string
           created_by?: string | null
           id?: string
@@ -25869,7 +25876,7 @@ export type Database = {
         }
         Update: {
           assigned_date?: string
-          beat_id?: string | null
+          beat_id?: string
           created_at?: string
           created_by?: string | null
           id?: string
@@ -27312,18 +27319,64 @@ export type Database = {
       }
     }
     Views: {
-      analytics_productivity_summary: {
+      activity_daily_summary: {
         Row: {
-          activity_date: string | null
-          pending: number | null
-          planned: number | null
-          productive: number | null
-          ptv_pct: number | null
-          unproductive: number | null
+          activity_points: number | null
+          completed_activities: number | null
+          completed_activity_minutes: number | null
+          date: string | null
+          total_activities: number | null
+          total_activity_minutes: number | null
           user_id: string | null
-          user_name: string | null
-          username: string | null
-          vto_pct: number | null
+        }
+        Relationships: []
+      }
+      activity_type_productivity: {
+        Row: {
+          activities: number | null
+          activity_type: string | null
+          completed: number | null
+          date: string | null
+          is_sales_activity: boolean | null
+          minutes: number | null
+          points: number | null
+          user_id: string | null
+          weight: number | null
+        }
+        Relationships: []
+      }
+      field_productivity_daily: {
+        Row: {
+          activity_minutes: number | null
+          activity_points: number | null
+          completed_activities: number | null
+          date: string | null
+          overall_field_productivity: number | null
+          productive_sales_visits: number | null
+          total_activity_visits: number | null
+          total_sales_visits: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      hypopg_hidden_indexes: {
+        Row: {
+          am_name: unknown
+          index_name: unknown
+          indexrelid: unknown
+          is_hypo: boolean | null
+          schema_name: unknown
+          table_name: unknown
+        }
+        Relationships: []
+      }
+      hypopg_list_indexes: {
+        Row: {
+          am_name: unknown
+          index_name: string | null
+          indexrelid: unknown
+          schema_name: unknown
+          table_name: unknown
         }
         Relationships: []
       }
@@ -28431,6 +28484,36 @@ export type Database = {
         Returns: boolean
       }
       hash_hint_answer: { Args: { answer: string }; Returns: string }
+      hypopg: { Args: never; Returns: Record<string, unknown>[] }
+      hypopg_create_index: {
+        Args: { sql_order: string }
+        Returns: Record<string, unknown>[]
+      }
+      hypopg_drop_index: { Args: { indexid: unknown }; Returns: boolean }
+      hypopg_get_indexdef: { Args: { indexid: unknown }; Returns: string }
+      hypopg_hidden_indexes: {
+        Args: never
+        Returns: {
+          indexid: unknown
+        }[]
+      }
+      hypopg_hide_index: { Args: { indexid: unknown }; Returns: boolean }
+      hypopg_relation_size: { Args: { indexid: unknown }; Returns: number }
+      hypopg_reset: { Args: never; Returns: undefined }
+      hypopg_reset_index: { Args: never; Returns: undefined }
+      hypopg_unhide_all_indexes: { Args: never; Returns: undefined }
+      hypopg_unhide_index: { Args: { indexid: unknown }; Returns: boolean }
+      index_advisor: {
+        Args: { query: string }
+        Returns: {
+          errors: string[]
+          index_statements: string[]
+          startup_cost_after: Json
+          startup_cost_before: Json
+          total_cost_after: Json
+          total_cost_before: Json
+        }[]
+      }
       initialize_leave_policy_balances: {
         Args: { p_policy_id: string }
         Returns: undefined
@@ -28950,6 +29033,7 @@ export type Database = {
         | "in_review"
         | "done"
         | "cancelled"
+        | "overdue"
       pm_task_type: "epic" | "story" | "task" | "bug" | "idea" | "milestone"
       user_status:
         | "pending_completion"
@@ -29121,6 +29205,7 @@ export const Constants = {
         "in_review",
         "done",
         "cancelled",
+        "overdue",
       ],
       pm_task_type: ["epic", "story", "task", "bug", "idea", "milestone"],
       user_status: [
