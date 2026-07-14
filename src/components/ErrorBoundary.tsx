@@ -3,15 +3,32 @@ import React from 'react';
 type Props = { children: React.ReactNode; resetKey?: string };
 type State = { hasError: boolean };
 
+const isRecoverableRuntimeError = (error: Error) => {
+  const message = `${error?.message || ''}`.toLowerCase();
+  return (
+    message.includes('tried to subscribe multiple times') ||
+    message.includes('channel') && message.includes('subscribe')
+  );
+};
+
 export class ErrorBoundary extends React.Component<Props, State> {
   state: State = { hasError: false };
 
-  static getDerivedStateFromError(): State {
+  static getDerivedStateFromError(error: Error): State | null {
+    if (isRecoverableRuntimeError(error)) {
+      return null;
+    }
+
     return { hasError: true };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // Always log render crashes — never hide them.
+    if (isRecoverableRuntimeError(error)) {
+      console.warn('[ErrorBoundary] Recovered from transient runtime error:', error.message);
+      return;
+    }
+
+    // Always log real render crashes — never hide them.
     console.error('[ErrorBoundary] Render crash:', error, info.componentStack);
   }
 
@@ -39,7 +56,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 Try again
               </button>
               <button
-                onClick={() => window.location.reload()}
+                onClick={() => this.setState({ hasError: false })}
                 className="px-4 py-2 border rounded-md"
               >
                 Refresh
