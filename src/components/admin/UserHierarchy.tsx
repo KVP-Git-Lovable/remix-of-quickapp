@@ -217,7 +217,7 @@ const UserHierarchy: React.FC<UserHierarchyProps> = ({ className }) => {
     fetchHierarchy();
 
     const channel = supabase
-      .channel(`hierarchy-changes-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('hierarchy-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, () => fetchHierarchy())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_profiles' }, () => fetchHierarchy())
       .subscribe();

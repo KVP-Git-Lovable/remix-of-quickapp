@@ -86,7 +86,7 @@ export const CurrentLocationMap: React.FC<CurrentLocationMapProps> = ({
 
     // Subscribe to attendance changes
     const channel = supabase
-      .channel(`attendance-tracking-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('attendance-tracking')
       .on(
         'postgres_changes',
         {

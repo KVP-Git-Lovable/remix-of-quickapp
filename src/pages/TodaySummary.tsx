@@ -306,7 +306,7 @@ export const TodaySummary = () => {
       if (!user) return;
 
       channel = supabase
-        .channel(`points-updates-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+        .channel('points-updates')
         .on(
           'postgres_changes',
           {

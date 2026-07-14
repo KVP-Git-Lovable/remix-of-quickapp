@@ -155,7 +155,7 @@ export default function VanSalesManagement() {
   // Real-time subscription for van_stock and van_stock_items changes
   useEffect(() => {
     const channel = supabase
-      .channel(`van-stock-changes-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('van-stock-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'van_stock' },

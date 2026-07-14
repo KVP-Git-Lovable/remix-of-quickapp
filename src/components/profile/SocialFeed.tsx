@@ -63,7 +63,7 @@ export function SocialFeed() {
     console.log('Setting up realtime subscription for automated posts...');
     
     channelRef.current = supabase
-      .channel(`automated-posts-feed-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('automated-posts-feed')
       .on(
         'postgres_changes',
         {

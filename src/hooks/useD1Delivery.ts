@@ -31,7 +31,7 @@ export function useD1Delivery() {
 
     // Subscribe to real-time changes
     const channel = supabase
-      .channel(`d1_delivery_feature-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('d1_delivery_feature')
       .on(
         'postgres_changes',
         {
@@ -84,7 +84,7 @@ export function usePackingListModule() {
 
     // Subscribe to real-time changes
     const channel = supabase
-      .channel(`packing_list_module_feature-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('packing_list_module_feature')
       .on(
         'postgres_changes',
         {
@@ -137,7 +137,7 @@ export function useDeliveryAgentApp() {
 
     // Subscribe to real-time changes
     const channel = supabase
-      .channel(`delivery_agent_app_feature-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('delivery_agent_app_feature')
       .on(
         'postgres_changes',
         {

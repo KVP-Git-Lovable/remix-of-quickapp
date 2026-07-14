@@ -174,7 +174,7 @@ export const AdminDashboard = () => {
   useEffect(() => {
     if (hasAdminAccess) {
       const profilesChannel = supabase
-        .channel(`profiles-changes-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+        .channel('profiles-changes')
         .on('postgres_changes', 
           { event: '*', schema: 'public', table: 'profiles' },
           () => {

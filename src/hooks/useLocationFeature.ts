@@ -45,7 +45,7 @@ export const useLocationFeature = () => {
   // Subscribe to realtime changes for any of the 3 keys
   useEffect(() => {
     const channel = supabase
-      .channel(`visit-check-in-flag-changes-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('visit-check-in-flag-changes')
       .on(
         'postgres_changes',
         {

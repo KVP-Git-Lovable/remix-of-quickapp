@@ -23055,6 +23055,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          is_active: boolean
           is_system: boolean | null
           name: string
           updated_at: string | null
@@ -23063,6 +23064,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_active?: boolean
           is_system?: boolean | null
           name: string
           updated_at?: string | null
@@ -23071,6 +23073,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_active?: boolean
           is_system?: boolean | null
           name?: string
           updated_at?: string | null
