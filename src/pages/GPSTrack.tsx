@@ -151,7 +151,7 @@ export default function GPSTrack() {
     if (!selectedMember) return;
 
     const channel = supabase
-      .channel('visit-updates')
+      .channel(`visit-updates-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on(
         'postgres_changes',
         {

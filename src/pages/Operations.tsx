@@ -1184,19 +1184,19 @@ const Operations = () => {
     const silentRefetchReturns = debounce(() => fetchReturnStockDataRef.current(true), 800);
 
     const ordersChannel = supabase
-      .channel('operations-orders')
+      .channel(`operations-orders-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, silentRefetchOrders)
       .subscribe();
     const visitsChannel = supabase
-      .channel('operations-visits')
+      .channel(`operations-visits-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'visits' }, silentRefetchCheckins)
       .subscribe();
     const stockChannel = supabase
-      .channel('operations-stock')
+      .channel(`operations-stock-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stock' }, silentRefetchStock)
       .subscribe();
     const returnChannel = supabase
-      .channel('operations-returns')
+      .channel(`operations-returns-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'van_return_grn' }, silentRefetchReturns)
       .subscribe();
 

@@ -223,7 +223,7 @@ export const Schemes = () => {
 
     // Set up real-time subscription
     const channel = supabase
-      .channel('product_schemes_changes')
+      .channel(`product_schemes_changes-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on(
         'postgres_changes',
         {

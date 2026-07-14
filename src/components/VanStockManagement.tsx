@@ -244,7 +244,7 @@ export function VanStockManagement({ open, onOpenChange, selectedDate }: VanStoc
     if (!selectedDate) return;
 
     const channel = supabase
-      .channel('order-updates')
+      .channel(`order-updates-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on(
         'postgres_changes',
         {

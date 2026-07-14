@@ -95,7 +95,7 @@ const TerritoriesManagement = () => {
 
     // Set up real-time subscription for orders to update territory stats
     const channel = supabase
-      .channel('territories-orders-updates')
+      .channel(`territories-orders-updates-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on(
         'postgres_changes',
         {

@@ -349,7 +349,7 @@ export const MyBeats = () => {
     if (!user) return;
 
     const channel = supabase
-      .channel('beats-updates')
+      .channel(`beats-updates-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on(
         'postgres_changes',
         {

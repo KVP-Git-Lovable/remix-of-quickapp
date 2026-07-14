@@ -133,7 +133,7 @@ const LiveAttendanceMonitoring = () => {
     
     // Real-time subscription: refresh summary + detail rows on any attendance change
     const channel = supabase
-      .channel('attendance-monitoring')
+      .channel(`attendance-monitoring-${Math.random().toString(36).slice(2)}-${Date.now()}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'attendance' },
