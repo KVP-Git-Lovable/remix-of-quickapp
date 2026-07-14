@@ -113,11 +113,11 @@ const DistributorInventory = () => {
   useEffect(() => {
     if (!distributorId) return;
     const invChannel = supabase
-      .channel(`inv-changes-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('inv-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'distributor_inventory', filter: `distributor_id=eq.${distributorId}` }, () => loadData())
       .subscribe();
     const txnChannel = supabase
-      .channel(`txn-changes-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('txn-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'distributor_inventory_transactions', filter: `distributor_id=eq.${distributorId}` }, () => loadData())
       .subscribe();
     return () => { supabase.removeChannel(invChannel); supabase.removeChannel(txnChannel); };

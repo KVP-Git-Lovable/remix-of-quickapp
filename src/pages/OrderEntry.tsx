@@ -1083,7 +1083,7 @@ export const OrderEntry = () => {
       return;
     }
 
-    const channel = supabase.channel(`order-entry-changes-${Math.random().toString(36).slice(2)}-${Date.now()}`).on('postgres_changes', {
+    const channel = supabase.channel('order-entry-changes').on('postgres_changes', {
       event: '*',
       schema: 'public',
       table: 'products'

@@ -72,7 +72,7 @@ const TransactionsLedgerPanel = ({ distributorId, products, warehouses = [] }: T
 
   useEffect(() => {
     const channel = supabase
-      .channel(`ledger-changes-${Math.random().toString(36).slice(2)}-${Date.now()}`)
+      .channel('ledger-changes')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'distributor_inventory_transactions', filter: `distributor_id=eq.${distributorId}` }, () => loadTransactions())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
