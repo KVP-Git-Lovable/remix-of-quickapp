@@ -349,9 +349,8 @@ export const OperationsSummaryBoxes: React.FC<OperationsSummaryBoxesProps> = ({
 
   // Real-time subscription for auto-updates
   useEffect(() => {
-    const suffix = Math.random().toString(36).slice(2);
     const ordersChannel = supabase
-      .channel(`operations-orders-${suffix}`)
+      .channel(`operations-orders-summary-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
         fetchStats();
         // If credit dialog is open, refresh breakdown
@@ -362,14 +361,14 @@ export const OperationsSummaryBoxes: React.FC<OperationsSummaryBoxesProps> = ({
       .subscribe();
 
     const stockChannel = supabase
-      .channel(`operations-stock-${suffix}`)
+      .channel(`operations-stock-summary-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stock' }, () => {
         fetchStats();
       })
       .subscribe();
 
     const visitsChannel = supabase
-      .channel(`operations-visits-${suffix}`)
+      .channel(`operations-visits-summary-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'visits' }, () => {
         fetchStats();
       })
