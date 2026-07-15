@@ -4,14 +4,16 @@
 
 -- 1) Categories
 INSERT INTO public.uom_category (id,code,name,is_system,enabled,sort_order,created_at,updated_at) VALUES
-('9720abe0-7975-48fd-b6f7-2fde0fd63fbb','WEIGHT','Weight','t','t',10,now(),now()),
-('8ed8de9c-7045-4107-b2fe-6ed176793027','VOLUME','Volume','t','t',20,now(),now()),
-('64eeef57-5321-401c-ae1d-dd9c5bbbf45c','LENGTH','Length','t','t',30,now(),now()),
-('3707d228-588f-4d42-b509-3b201e7f7c56','QUANTITY','Quantity','t','t',40,now(),now()),
-('75534f99-98dd-4081-8a86-4af3f4c45198','MEDICATION','Medication','t','t',50,now(),now()),
-('71d42d6a-44a8-443f-83ad-a0e14b15f5ea','ELECTRONICS','Electronics','t','t',60,now(),now()),
-('b13adf0b-f917-4959-ac0b-d94f207fe9f9','PACKAGING','Packaging','t','t',70,now(),now())
+('9720abe0-7975-48fd-b6f7-2fde0fd63fbb','Weight','Weight','t','t',10,now(),now()),
+('8ed8de9c-7045-4107-b2fe-6ed176793027','Volume','Volume','t','t',20,now(),now()),
+('64eeef57-5321-401c-ae1d-dd9c5bbbf45c','Length','Length','t','t',30,now(),now()),
+('3707d228-588f-4d42-b509-3b201e7f7c56','Quantity','Quantity','t','t',40,now(),now()),
+('75534f99-98dd-4081-8a86-4af3f4c45198','Medication','Medication','t','t',50,now(),now()),
+('71d42d6a-44a8-443f-83ad-a0e14b15f5ea','Electronics','Electronics','t','t',60,now(),now()),
+('b13adf0b-f917-4959-ac0b-d94f207fe9f9','Packaging','Packaging','t','t',70,now(),now())
 ON CONFLICT (id) DO NOTHING;
+-- code must equal the capitalized category name to match uom_master.category (grouping key).
+UPDATE public.uom_category SET code = name WHERE code <> name;
 
 -- 2) Units
 INSERT INTO public.uom_master (id,code,name,category,is_base,is_system,category_id,conversion_to_base,created_at,updated_at) VALUES
