@@ -299,12 +299,20 @@ export function BeatAnalyticsModal({ isOpen, onClose, beatId, beatName, userId }
           </DialogTitle>
         </DialogHeader>
 
+        <Tabs value={outerTab} onValueChange={handleOuterTabChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="retailers-board">Retailers</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="mt-4">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : (
           <div className="space-y-6">
+
             {/* Key Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <Card>
