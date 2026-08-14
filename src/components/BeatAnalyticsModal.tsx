@@ -8,6 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { TrendingUp, TrendingDown, Package, Users, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RetailerDetailModal } from '@/components/RetailerDetailModal';
+import { BeatRetailersTab } from '@/components/beats/BeatRetailersTab';
 
 interface BeatAnalyticsModalProps {
   isOpen: boolean;
@@ -46,6 +47,14 @@ export function BeatAnalyticsModal({ isOpen, onClose, beatId, beatName, userId }
   const [allRetailersInBeat, setAllRetailersInBeat] = useState<any[]>([]);
   const [selectedRetailerId, setSelectedRetailerId] = useState<string | null>(null);
   const [showRetailerDetail, setShowRetailerDetail] = useState(false);
+  const [outerTab, setOuterTab] = useState<string>(() => {
+    try { return sessionStorage.getItem('beatAnalytics.outerTab') || 'overview'; } catch { return 'overview'; }
+  });
+
+  const handleOuterTabChange = (value: string) => {
+    setOuterTab(value);
+    try { sessionStorage.setItem('beatAnalytics.outerTab', value); } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     if (isOpen && beatId) {
@@ -364,7 +373,7 @@ export function BeatAnalyticsModal({ isOpen, onClose, beatId, beatName, userId }
             <Tabs defaultValue="products" className="w-full">
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1">
                 <TabsTrigger value="products" className="text-xs md:text-sm">Sales by Product</TabsTrigger>
-                <TabsTrigger value="retailers" className="text-xs md:text-sm">Retailers</TabsTrigger>
+                <TabsTrigger value="retailers" className="text-xs md:text-sm">Top Retailers</TabsTrigger>
                 <TabsTrigger value="growth" className="text-xs md:text-sm">Revenue Trend</TabsTrigger>
                 <TabsTrigger value="lifetime" className="text-xs md:text-sm">Lifetime Value</TabsTrigger>
                 <TabsTrigger value="visits" className="text-xs md:text-sm">Last 10 Visits</TabsTrigger>

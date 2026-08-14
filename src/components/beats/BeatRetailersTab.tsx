@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { AlertCircle, ChevronRight, ExternalLink, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -164,9 +164,8 @@ export function BeatRetailersTab({
               {visible.map((r: RetailerBoardRow) => {
                 const open = expandedId === r.retailer_id;
                 return (
-                  <>
+                  <Fragment key={r.retailer_id}>
                     <tr
-                      key={r.retailer_id}
                       tabIndex={0}
                       role="button"
                       aria-expanded={open}
@@ -224,7 +223,7 @@ export function BeatRetailersTab({
                     </tr>
 
                     {open && (
-                      <tr key={`${r.retailer_id}-detail`} className="border-b bg-muted/20">
+                      <tr className="border-b bg-muted/20">
                         <td colSpan={7} className="px-3 py-3">
                           <div className={cn('rounded-xl border p-3 text-sm leading-relaxed', STATE_STYLES[r.state].chip)}>
                             {buildVerdict(r)}
@@ -271,7 +270,7 @@ export function BeatRetailersTab({
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
