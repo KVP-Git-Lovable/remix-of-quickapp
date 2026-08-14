@@ -8,6 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { TrendingUp, TrendingDown, Package, Users, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RetailerDetailModal } from '@/components/RetailerDetailModal';
+import { BeatRetailersTab } from '@/components/beats/BeatRetailersTab';
 
 interface BeatAnalyticsModalProps {
   isOpen: boolean;
@@ -46,6 +47,14 @@ export function BeatAnalyticsModal({ isOpen, onClose, beatId, beatName, userId }
   const [allRetailersInBeat, setAllRetailersInBeat] = useState<any[]>([]);
   const [selectedRetailerId, setSelectedRetailerId] = useState<string | null>(null);
   const [showRetailerDetail, setShowRetailerDetail] = useState(false);
+  const [outerTab, setOuterTab] = useState<string>(() => {
+    try { return sessionStorage.getItem('beatAnalytics.outerTab') || 'overview'; } catch { return 'overview'; }
+  });
+
+  const handleOuterTabChange = (value: string) => {
+    setOuterTab(value);
+    try { sessionStorage.setItem('beatAnalytics.outerTab', value); } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     if (isOpen && beatId) {
@@ -299,12 +308,20 @@ export function BeatAnalyticsModal({ isOpen, onClose, beatId, beatName, userId }
           </DialogTitle>
         </DialogHeader>
 
+        <Tabs value={outerTab} onValueChange={handleOuterTabChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="retailers-board">Retailers</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="mt-4">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : (
           <div className="space-y-6">
+
             {/* Key Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <Card>
@@ -356,7 +373,7 @@ export function BeatAnalyticsModal({ isOpen, onClose, beatId, beatName, userId }
             <Tabs defaultValue="products" className="w-full">
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1">
                 <TabsTrigger value="products" className="text-xs md:text-sm">Sales by Product</TabsTrigger>
-                <TabsTrigger value="retailers" className="text-xs md:text-sm">Retailers</TabsTrigger>
+                <TabsTrigger value="retailers" className="text-xs md:text-sm">Top Retailers</TabsTrigger>
                 <TabsTrigger value="growth" className="text-xs md:text-sm">Revenue Trend</TabsTrigger>
                 <TabsTrigger value="lifetime" className="text-xs md:text-sm">Lifetime Value</TabsTrigger>
                 <TabsTrigger value="visits" className="text-xs md:text-sm">Last 10 Visits</TabsTrigger>
@@ -562,6 +579,20 @@ export function BeatAnalyticsModal({ isOpen, onClose, beatId, beatName, userId }
             </Tabs>
           </div>
         )}
+            </TabsContent>
+
+            <TabsContent value="retailers-board" className="mt-4">
+              <BeatRetailersTab
+                beatId={beatId}
+                beatName={beatName}
+                onOpenRetailer={(id) => {
+                  setSelectedRetailerId(id);
+                  setShowRetailerDetail(true);
+                }}
+              />
+            </TabsContent>
+          </Tabs>
+
         
         {/* Retailer Detail Modal */}
         {selectedRetailerId && (

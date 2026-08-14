@@ -27948,6 +27948,32 @@ export type Database = {
           username: string
         }[]
       }
+      get_beat_retailer_board: {
+        Args: { p_beat_id: string; p_days?: number }
+        Returns: {
+          avg_order_value: number
+          category_assigned: string
+          created_at: string
+          days_since_last_order: number
+          dominant_objection: string
+          flags: string[]
+          grade_derived: string
+          last_order_date: string
+          median_gap_days: number
+          momentum_pct: number
+          orders_count: number
+          orders_total_count: number
+          overdue_ratio: number
+          premium_pct: number
+          retailer_id: string
+          retailer_name: string
+          revenue: number
+          sku_count: number
+          state: string
+          value_at_risk: number
+          visits_count: number
+        }[]
+      }
       get_carry_forward_retailers: {
         Args: { p_date: string; p_user: string }
         Returns: {
