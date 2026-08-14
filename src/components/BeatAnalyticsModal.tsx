@@ -562,6 +562,20 @@ export function BeatAnalyticsModal({ isOpen, onClose, beatId, beatName, userId }
             </Tabs>
           </div>
         )}
+            </TabsContent>
+
+            <TabsContent value="retailers-board" className="mt-4">
+              <BeatRetailersTab
+                beatId={beatId}
+                beatName={beatName}
+                onOpenRetailer={(id) => {
+                  setSelectedRetailerId(id);
+                  setShowRetailerDetail(true);
+                }}
+              />
+            </TabsContent>
+          </Tabs>
+
         
         {/* Retailer Detail Modal */}
         {selectedRetailerId && (
