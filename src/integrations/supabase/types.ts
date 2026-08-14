@@ -7515,7 +7515,15 @@ export type Database = {
           uom_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "enabled_units_uom_id_fkey"
+            columns: ["uom_id"]
+            isOneToOne: true
+            referencedRelation: "uom_master"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_stock_audit: {
         Row: {
@@ -28366,6 +28374,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_target_advisor_facts: { Args: never; Returns: Json }
       get_team_activities: {
         Args: { p_from?: string; p_to?: string }
         Returns: {
@@ -28592,6 +28601,10 @@ export type Database = {
       notify_admins: {
         Args: { p_message: string; p_title: string; p_type: string }
         Returns: undefined
+      }
+      oi_product_label: {
+        Args: { p_name: string; p_product_id: string }
+        Returns: string
       }
       owns_completed_invitation: {
         Args: { _email: string; _user_id: string }
