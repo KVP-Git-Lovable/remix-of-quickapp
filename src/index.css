@@ -148,8 +148,54 @@
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 220 30% 20%;
     --sidebar-ring: 35 65% 55%;
+
+    --copilot-chrome-start: 0 0% 2%;
+    --copilot-chrome-mid: 220 5% 9%;
+    --copilot-chrome-end: 220 4% 18%;
+    --copilot-card: 0 0% 100% / 0.07;
+    --copilot-card-hover: 0 0% 100% / 0.12;
+
+    --copilot-ticker-start: 45 40% 92%;
+    --copilot-ticker-mid: 46 55% 86%;
+    --copilot-ticker-end: 44 60% 78%;
+    --copilot-ticker-border: 45 40% 60%;
+    --copilot-ticker-label: 219 79% 32%;
+    --copilot-ticker-metric: 22 62% 26%;
+    --copilot-ticker-name: 0 0% 8%;
   }
 }
+
+@layer components {
+  .copilot-chrome {
+    background: linear-gradient(145deg, hsl(var(--copilot-chrome-start)), hsl(var(--copilot-chrome-mid)) 55%, hsl(var(--copilot-chrome-end)));
+  }
+
+  .copilot-action {
+    background: linear-gradient(135deg, hsl(var(--copilot-chrome-start)), hsl(var(--copilot-chrome-end)));
+  }
+
+  .copilot-ticker {
+    background: linear-gradient(
+      100deg,
+      hsl(var(--copilot-ticker-start)),
+      hsl(var(--copilot-ticker-mid)) 55%,
+      hsl(var(--copilot-ticker-end))
+    );
+    border-bottom: 1px solid hsl(var(--copilot-ticker-border));
+  }
+
+  .copilot-insight-card,
+  .copilot-question-card {
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    border-radius: 0.5rem;
+    background: hsl(var(--copilot-card));
+  }
+
+  .copilot-question-card:hover {
+    background: hsl(var(--copilot-card-hover));
+  }
+}
+
 
 
 @layer base {
