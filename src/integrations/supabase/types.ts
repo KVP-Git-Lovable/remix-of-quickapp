@@ -540,6 +540,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_agents: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          key: string
+          name: string
+          sort_order: number
+          status: Database["public"]["Enums"]["ai_agent_status"]
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          key: string
+          name: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["ai_agent_status"]
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          key?: string
+          name?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["ai_agent_status"]
+        }
+        Relationships: []
+      }
       ai_autonomous_actions: {
         Row: {
           action_data: Json | null
@@ -800,6 +833,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ai_workflows: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          config: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       analytics_likes: {
         Row: {
@@ -27251,6 +27317,66 @@ export type Database = {
         }
         Relationships: []
       }
+      workflow_executions: {
+        Row: {
+          agent_id: string | null
+          completed_at: string | null
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          result: Json | null
+          stage: Database["public"]["Enums"]["workflow_stage"]
+          started_at: string
+          status: Database["public"]["Enums"]["workflow_exec_status"]
+          triggered_by: string | null
+          workflow_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          result?: Json | null
+          stage?: Database["public"]["Enums"]["workflow_stage"]
+          started_at?: string
+          status?: Database["public"]["Enums"]["workflow_exec_status"]
+          triggered_by?: string | null
+          workflow_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          result?: Json | null
+          stage?: Database["public"]["Enums"]["workflow_stage"]
+          started_at?: string
+          status?: Database["public"]["Enums"]["workflow_exec_status"]
+          triggered_by?: string | null
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_executions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_executions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "ai_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflow_steps: {
         Row: {
           approver_role: string | null
@@ -29042,6 +29168,7 @@ export type Database = {
       }
     }
     Enums: {
+      ai_agent_status: "prototype" | "coming_soon" | "live"
       app_role: "admin" | "user"
       approval_status: "pending" | "approved" | "rejected"
       branding_status:
@@ -29084,6 +29211,13 @@ export type Database = {
         | "rejected"
         | "active"
         | "inactive"
+      workflow_exec_status: "running" | "success" | "failed"
+      workflow_stage:
+        | "workflow"
+        | "validation"
+        | "simulation"
+        | "production"
+        | "monitoring"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -29211,6 +29345,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ai_agent_status: ["prototype", "coming_soon", "live"],
       app_role: ["admin", "user"],
       approval_status: ["pending", "approved", "rejected"],
       branding_status: [
@@ -29257,6 +29392,14 @@ export const Constants = {
         "rejected",
         "active",
         "inactive",
+      ],
+      workflow_exec_status: ["running", "success", "failed"],
+      workflow_stage: [
+        "workflow",
+        "validation",
+        "simulation",
+        "production",
+        "monitoring",
       ],
     },
   },
