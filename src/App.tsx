@@ -254,6 +254,15 @@ import MyDeliveriesPage from "./pages/MyDeliveries";
 import PackingListDetailPage from "./pages/PackingListDetail";
 import PackingListDispatchPage from "./pages/PackingListDispatchPage";
 
+// --- QuickApp AI module (ported from staging-quickapp Dev) ---
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { RoutePermissionGuard } from "@/components/auth/RoutePermissionGuard";
+import { AiModuleShell } from "./modules/quickapp-ai/components/AiModuleShell";
+import AiChatPage from "./modules/quickapp-ai/pages/AiChatPage";
+import AiWorkflowsPage from "./modules/quickapp-ai/pages/AiWorkflowsPage";
+import AiInsightsPage from "./modules/quickapp-ai/pages/AiInsightsPage";
+import SahayaPage from "./modules/quickapp-ai/pages/SahayaPage";
+
 // ARCHIVED: Projects module hidden
 // import ProjectsPage from "./pages/pm/ProjectsPage";
 
@@ -404,6 +413,7 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <NetworkProvider>
           <AuthProvider>
+            <CurrencyProvider>
             <FeatureProvider>
               <QAModeProvider>
                 <TooltipProvider>
@@ -416,6 +426,7 @@ const App = () => {
                 </TooltipProvider>
               </QAModeProvider>
             </FeatureProvider>
+            </CurrencyProvider>
           </AuthProvider>
         </NetworkProvider>
       </QueryClientProvider>
@@ -509,6 +520,14 @@ const AppContent = () => {
         <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
         <Route path="/copilot" element={<ProtectedRoute><Copilot /></ProtectedRoute>} />
         <Route path="/copilot/:threadId" element={<ProtectedRoute><Copilot /></ProtectedRoute>} />
+        <Route path="/quickapp-ai" element={<ProtectedRoute><RoutePermissionGuard permissionPrefix="module_quickapp_ai" moduleName="QuickApp AI"><AiModuleShell /></RoutePermissionGuard></ProtectedRoute>}>
+          <Route index element={<Navigate to="/quickapp-ai/chat" replace />} />
+          <Route path="chat" element={<AiChatPage />} />
+          <Route path="chat/:threadId" element={<AiChatPage />} />
+          <Route path="workflows" element={<AiWorkflowsPage />} />
+          <Route path="insights" element={<AiInsightsPage />} />
+          <Route path="sahaya" element={<SahayaPage />} />
+        </Route>
         
         
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

@@ -1,4 +1,4 @@
-import { Menu, X, LogOut, ArrowLeft, Wifi, WifiOff, AlertTriangle } from "lucide-react";
+import { Menu, X, LogOut, ArrowLeft, Wifi, WifiOff, AlertTriangle, Sparkles } from "lucide-react";
 
 
 import { toast } from 'sonner';
@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useActivePerformanceModule } from "@/hooks/useActivePerformanceModule";
 import { usePackingListModule, useDeliveryAgentApp } from "@/hooks/useD1Delivery";
 import { useCompanyData } from "@/hooks/useCompanyData";
+import { useProfilePermissions } from "@/hooks/useProfilePermissions";
 import { Building2 as DefaultLogoIcon } from "lucide-react";
 import { useNavCustomization, NavItem } from "@/hooks/useNavCustomization";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
@@ -84,6 +85,10 @@ export const Navbar = memo(() => {
   const { isEnabled: isDeliveryAgentEnabled } = useDeliveryAgentApp();
   const { headerName, headerLogo } = useCompanyData();
   const { isNavItemEnabled } = useFeatureFlags();
+  const { permissions: profilePermissions, hasModuleAccess: hasProfileModuleAccess } = useProfilePermissions();
+  // QuickApp AI follows the standard module-permission contract.
+  const canAccessQuickAppAi =
+    profilePermissions.length === 0 || hasProfileModuleAccess('module_quickapp_ai');
   
   // Company name and logo - no hardcoded fallbacks, uses cache
   const companyName = headerName || '';
@@ -131,6 +136,9 @@ export const Navbar = memo(() => {
 
     // Add remaining items
     baseItems.push(
+      ...(canAccessQuickAppAi
+        ? [{ id: 'quickapp-ai', icon: Sparkles, label: 'QuickApp AI', href: "/quickapp-ai", color: "from-blue-500 to-violet-600" }]
+        : []),
       // { id: 'projects', icon: FolderKanban, label: 'Projects', href: "/projects", color: "from-sky-500 to-sky-600" }, // ARCHIVED: Projects module hidden
       { id: 'my-competency', icon: Target, label: t('nav.competency'), href: "/competency-dashboard", color: "from-indigo-500 to-indigo-600" },
       { id: 'help-center', icon: HelpCircle, label: 'Help Center', href: "/help-center", color: "from-teal-500 to-teal-600" },
@@ -140,7 +148,7 @@ export const Navbar = memo(() => {
 
     // Filter by feature flags
     return baseItems.filter(item => isNavItemEnabled(item.id));
-  }, [t, isGamificationActive, isPackingListEnabled, isDeliveryAgentEnabled, isNavItemEnabled]);
+  }, [t, isGamificationActive, isPackingListEnabled, isDeliveryAgentEnabled, isNavItemEnabled, canAccessQuickAppAi]);
 
   // Nav customization hook
   const {
@@ -249,6 +257,15 @@ export const Navbar = memo(() => {
             </div>
             
             <div className="flex items-center gap-1">
+              {canAccessQuickAppAi && (
+                <NavLink
+                  to="/quickapp-ai"
+                  title="QuickApp AI"
+                  className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white flex items-center"
+                >
+                  <Sparkles size={18} />
+                </NavLink>
+              )}
               <NotificationBell />
               <button 
                 onClick={() => setIsMenuOpen(true)}
