@@ -422,7 +422,7 @@ export const TableOrderForm = forwardRef<TableOrderFormHandle, TableOrderFormPro
             const emptyRowIndex = updatedRows.findIndex(row => !row.product && row.quantity === 0);
             
             const newRow: OrderRow = {
-              id: emptyRowIndex >= 0 ? updatedRows[emptyRowIndex].id : Date.now().toString(),
+              id: emptyRowIndex >= 0 ? updatedRows[emptyRowIndex].id : `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
               productCode: variant?.sku || product.sku,
               product: product,
               variant: variant,

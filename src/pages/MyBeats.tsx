@@ -15,6 +15,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Layout } from "@/components/Layout";
 import { RetailerAnalytics } from "@/components/RetailerAnalytics";
 import { EditBeatModal } from "@/components/EditBeatModal";
+import { BeatPlannerInsightsCard } from "@/components/BeatPlannerInsightsCard";
+import { useBeatPlannerInsights } from "@/hooks/useBeatPlannerInsights";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -188,6 +190,10 @@ export const MyBeats = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
+  // AI Beat Planner insights (auto-loading/auto-running, shared between the
+  // summary card and the per-beat one-liners on each BeatCard).
+  const beatPlanInsights = useBeatPlannerInsights();
+
   // Hierarchical user filter - multi-select like MyRetailers
   const { isManager, subordinates, subordinateIds } = useSubordinates();
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -1560,6 +1566,11 @@ export const MyBeats = () => {
           </CardHeader>
         </Card>
 
+        {/* AI Beat Planner insights — consumes the existing QuickApp AI
+            beat_planner agent flow; the narrative summary shows here while
+            each BeatCard below carries its own one-line insight. */}
+        <BeatPlannerInsightsCard insights={beatPlanInsights} />
+
 
         {/* Compact stat cards (6) */}
         {(() => {
@@ -1934,6 +1945,7 @@ export const MyBeats = () => {
                   coverageStartDate={beat.coverageStartDate}
                   coverageEndDate={beat.coverageEndDate}
                   sharedByName={beat.sharedByName}
+                  planInsight={beatPlanInsights.insightFor(beat.name)}
                   onEdit={() => handleEditBeat(beat)}
                   onDelete={() => handleDeleteBeatClick(beat.id, beat.name)}
                   onDetails={() => setSelectedBeatForAnalytics(beat)}
