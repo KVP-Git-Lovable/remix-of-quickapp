@@ -682,12 +682,17 @@ async function runBeatPlanner(supabase: any, userId: string) {
   const since30 = isoDate(new Date(now.getTime() - 30 * DAY_MS));
   const STOPS_PER_DAY = 25;
 
-  // RLS scopes retailers to what the caller may see, same as the other runners.
+  // RLS on retailers evaluates several per-row helper functions, so an
+  // unfiltered scan of the whole table exceeds the statement timeout. Scope to
+  // the caller's own retailers (same scoping as the visits/orders reads below),
+  // which lets the (user_id, ...) indexes narrow the rows before RLS runs.
   const { data: retailers, error } = await supabase
     .from("retailers")
     .select("id, name, beat_name, priority, pending_amount, last_visit_date, created_at")
+    .eq("user_id", userId)
     .limit(3000);
   if (error) throw error;
+
 
   if (!(retailers ?? []).length) {
     return {
