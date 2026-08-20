@@ -686,12 +686,42 @@ async function runBeatPlanner(supabase: any, userId: string) {
   // unfiltered scan of the whole table exceeds the statement timeout. Scope to
   // the caller's own retailers (same scoping as the visits/orders reads below),
   // which lets the (user_id, ...) indexes narrow the rows before RLS runs.
-  const { data: retailers, error } = await supabase
+  const RETAILER_COLS = "id, name, beat_name, priority, pending_amount, last_visit_date, created_at";
+  const { data: ownRetailers, error } = await supabase
     .from("retailers")
-    .select("id, name, beat_name, priority, pending_amount, last_visit_date, created_at")
+    .select(RETAILER_COLS)
     .eq("user_id", userId)
     .limit(3000);
   if (error) throw error;
+
+  // Beats visible to this user also include beats shared with them (their
+  // retailers are owned by someone else, so the user_id scope above misses
+  // them). Pull those retailers by beat name so every beat card on /my-beats
+  // gets a row — RLS still decides what is actually returned.
+  const { data: myBeats } = await supabase
+    .from("beats")
+    .select("beat_name")
+    .limit(500);
+  const beatNames = [
+    ...new Set(
+      (myBeats ?? [])
+        .map((b: any) => String(b.beat_name ?? "").trim())
+        .filter(Boolean),
+    ),
+  ];
+  const byId = new Map<string, any>();
+  (ownRetailers ?? []).forEach((r: any) => byId.set(String(r.id), r));
+  for (let i = 0; i < beatNames.length; i += 40) {
+    const chunk = beatNames.slice(i, i + 40);
+    const { data: extra } = await supabase
+      .from("retailers")
+      .select(RETAILER_COLS)
+      .in("beat_name", chunk)
+      .limit(3000);
+    (extra ?? []).forEach((r: any) => byId.set(String(r.id), r));
+  }
+  const retailers = [...byId.values()];
+
 
 
   if (!(retailers ?? []).length) {
