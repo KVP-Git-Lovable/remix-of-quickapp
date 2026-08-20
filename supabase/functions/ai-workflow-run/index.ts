@@ -818,7 +818,9 @@ async function runBeatPlanner(supabase: any, userId: string) {
       newRetailers: b.newRetailers,
     }))
     .sort((a, b) => a.coveragePct - b.coveragePct || b.retailers - a.retailers)
-    .slice(0, 12);
+    // No cap: /my-beats renders a one-line insight per beat card, so every
+    // beat needs its own row (narration below still only reads the top ones).
+    .slice(0, 200);
 
   const totalRetailers = (retailers ?? []).length;
 
@@ -829,6 +831,7 @@ async function runBeatPlanner(supabase: any, userId: string) {
     "",
     "### Beats ordered by lowest coverage first",
     rows
+      .slice(0, 12)
       .map(
         (b) =>
           `- ${b.beat}: ${b.retailers} retailers, ${b.visited30d} visited in 30d (${b.coveragePct}% coverage), ` +
