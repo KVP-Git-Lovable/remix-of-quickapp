@@ -686,12 +686,47 @@ async function runBeatPlanner(supabase: any, userId: string) {
   // unfiltered scan of the whole table exceeds the statement timeout. Scope to
   // the caller's own retailers (same scoping as the visits/orders reads below),
   // which lets the (user_id, ...) indexes narrow the rows before RLS runs.
-  const { data: retailers, error } = await supabase
+  const RETAILER_COLS = "id, name, beat_name, priority, pending_amount, last_visit_date, created_at";
+  const { data: ownRetailers, error } = await supabase
     .from("retailers")
-    .select("id, name, beat_name, priority, pending_amount, last_visit_date, created_at")
+    .select(RETAILER_COLS)
     .eq("user_id", userId)
     .limit(3000);
   if (error) throw error;
+
+  // Beats visible to this user also include beats shared with them (their
+  // retailers are owned by someone else, so the user_id scope above misses
+  // them). Pull those retailers by beat name so every beat card on /my-beats
+  // gets a row — RLS still decides what is actually returned.
+  const { data: myBeats } = await supabase
+    .from("beats")
+    .select("beat_name")
+    .limit(500);
+  const byId = new Map<string, any>();
+  (ownRetailers ?? []).forEach((r: any) => byId.set(String(r.id), r));
+  const covered = new Set(
+    (ownRetailers ?? []).map((r: any) => String(r.beat_name ?? "").trim().toLowerCase()),
+  );
+  // Only the beats not already covered above, bounded so a wide-scope user
+  // never triggers a whole-table scan (that hits the statement timeout).
+  const beatNames = [
+    ...new Set(
+      (myBeats ?? [])
+        .map((b: any) => String(b.beat_name ?? "").trim())
+        .filter((n: string) => n && !covered.has(n.toLowerCase())),
+    ),
+  ].slice(0, 60);
+  for (let i = 0; i < beatNames.length; i += 30) {
+    const chunk = beatNames.slice(i, i + 30);
+    const { data: extra } = await supabase
+      .from("retailers")
+      .select(RETAILER_COLS)
+      .in("beat_name", chunk)
+      .limit(3000);
+    (extra ?? []).forEach((r: any) => byId.set(String(r.id), r));
+  }
+  const retailers = [...byId.values()];
+
 
 
   if (!(retailers ?? []).length) {
@@ -788,7 +823,9 @@ async function runBeatPlanner(supabase: any, userId: string) {
       newRetailers: b.newRetailers,
     }))
     .sort((a, b) => a.coveragePct - b.coveragePct || b.retailers - a.retailers)
-    .slice(0, 12);
+    // No cap: /my-beats renders a one-line insight per beat card, so every
+    // beat needs its own row (narration below still only reads the top ones).
+    .slice(0, 200);
 
   const totalRetailers = (retailers ?? []).length;
 
@@ -799,6 +836,7 @@ async function runBeatPlanner(supabase: any, userId: string) {
     "",
     "### Beats ordered by lowest coverage first",
     rows
+      .slice(0, 12)
       .map(
         (b) =>
           `- ${b.beat}: ${b.retailers} retailers, ${b.visited30d} visited in 30d (${b.coveragePct}% coverage), ` +

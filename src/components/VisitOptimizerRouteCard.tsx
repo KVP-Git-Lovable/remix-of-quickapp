@@ -69,7 +69,7 @@ interface Props {
 }
 
 export function VisitOptimizerRouteCard({ stops, totalKm, routeNote, loading, applied, onSuggestRoute, onReset }: Props) {
-  if (!loading && stops.length === 0) return null;
+  const isEmpty = !loading && stops.length === 0;
 
   const top = stops.slice(0, 5);
   const clusters = nearbyClusters(stops);
@@ -120,6 +120,13 @@ export function VisitOptimizerRouteCard({ stops, totalKm, routeNote, loading, ap
             </div>
           )}
         </div>
+
+        {isEmpty && (
+          <p className="mt-2.5 text-xs text-amber-950 dark:text-amber-100">
+            No visits are planned for today yet, so there is no route to optimise. Add today's
+            retailers to your plan and the suggested visiting order will appear here.
+          </p>
+        )}
 
         {!loading && stops.length > 0 && (
           <>
