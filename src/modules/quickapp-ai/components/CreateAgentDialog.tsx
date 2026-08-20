@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bot, Cpu, Database, Save, Sparkles, Table2 } from "lucide-react";
+import { Bot, CheckCircle2, Cpu, Database, Loader2, Save, Sparkles, Table2 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -12,6 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { HIERARCHICAL_MODULES } from "@/components/security/hierarchicalPermissions";
 import { tablesForModule } from "../data/moduleTableMap";
+import { useIsWorkflowAdmin } from "../hooks/useCustomWorkflows";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 /**
  * "Create AI Agent" builder — scaffold stage.
@@ -33,6 +36,13 @@ const AI_MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
 const AI_PROVIDER_ENDPOINT = "https://api.together.ai/v1/chat/completions";
 const AI_EDGE_FUNCTION = "ai-workflow-run (Supabase Edge Function)";
 
+interface CreatedAgent {
+  id: string;
+  name: string;
+  description: string;
+  blocks: string[];
+}
+
 interface AgentDraft {
   sourceModule: string;
   sourceLabel: string;
@@ -45,14 +55,19 @@ interface AgentDraft {
 export function CreateAgentDialog({
   open,
   onOpenChange,
+  onCreated,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCreated?: () => void;
 }) {
   const [sourceModule, setSourceModule] = useState("");
   const [destModule, setDestModule] = useState("");
   const [objective, setObjective] = useState("");
   const [draft, setDraft] = useState<AgentDraft | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [created, setCreated] = useState<CreatedAgent | null>(null);
+  const isAdmin = useIsWorkflowAdmin();
 
   const moduleOptions = useMemo(
     () => HIERARCHICAL_MODULES.map((m) => ({ name: m.name, label: m.label })),
@@ -70,6 +85,8 @@ export function CreateAgentDialog({
     setDestModule("");
     setObjective("");
     setDraft(null);
+    setCreated(null);
+    setSubmitting(false);
   };
 
   const canSave = !!sourceModule && !!destModule && objective.trim().length > 0;
@@ -84,6 +101,58 @@ export function CreateAgentDialog({
       destLabel: labelOf(destModule),
       objective: objective.trim(),
     });
+  };
+
+  const submitAgent = async () => {
+    if (!canSave || submitting) return;
+    setSubmitting(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) throw new Error("You are signed out. Please log in again.");
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-agent-builder`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sourceModule,
+            sourceLabel: labelOf(sourceModule),
+            destModule,
+            destLabel: labelOf(destModule),
+            objective: objective.trim(),
+            tables: [...sourceTables],
+          }),
+        },
+      );
+      const body = await res.json().catch(() => null);
+      if (!res.ok) {
+        if (res.status === 403 && body?.code === "admin_only") {
+          throw new Error("Only administrators can create AI agents");
+        }
+        throw new Error(body?.error ?? `Submit failed (${res.status})`);
+      }
+      setCreated({
+        id: String(body?.workflow?.id ?? ""),
+        name: String(body?.workflow?.name ?? ""),
+        description: String(body?.workflow?.description ?? ""),
+        blocks: Array.isArray(body?.blocks) ? body.blocks.map((b: unknown) => String(b)) : [],
+      });
+      toast({
+        title: "Agent created",
+        description: "Your agent now appears under Custom Workflows on this page.",
+      });
+      onCreated?.();
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Could not create agent",
+        description: err instanceof Error ? err.message : "Unexpected error",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -211,11 +280,75 @@ export function CreateAgentDialog({
                   <Save className="h-4 w-4" />
                   Save Draft
                 </Button>
+                {isAdmin === true ? (
+                  <Button
+                    variant="default"
+                    className="gap-2"
+                    disabled={!canSave || submitting}
+                    onClick={submitAgent}
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    {submitting ? "Submitting…" : "Submit"}
+                  </Button>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    Submit requires administrator access
+                  </span>
+                )}
                 <span className="text-xs text-muted-foreground">
                   Draft only — no server persistence at this stage.
                 </span>
               </div>
             </section>
+
+            {/* created agent — revealed after a successful Submit */}
+            {created && (
+              <section className="rounded-xl border-2 border-primary/40 bg-primary/5 p-4">
+                <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Agent created
+                </p>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
+                    <dt className="w-44 shrink-0 text-muted-foreground">Name</dt>
+                    <dd className="font-medium">{created.name}</dd>
+                  </div>
+                  <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
+                    <dt className="w-44 shrink-0 text-muted-foreground">Description</dt>
+                    <dd className="whitespace-pre-wrap">{created.description}</dd>
+                  </div>
+                  <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
+                    <dt className="w-44 shrink-0 text-muted-foreground">Analysis blocks</dt>
+                    <dd className="flex flex-wrap gap-1.5">
+                      {created.blocks.map((b) => (
+                        <Badge key={b} variant="secondary" className="font-mono text-[10px]">
+                          {b}
+                        </Badge>
+                      ))}
+                    </dd>
+                  </div>
+                  <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
+                    <dt className="w-44 shrink-0 text-muted-foreground">AI model</dt>
+                    <dd className="flex items-center gap-1.5 font-mono text-xs sm:text-sm">
+                      <Cpu className="h-3.5 w-3.5 text-primary" />
+                      {AI_MODEL}
+                    </dd>
+                  </div>
+                  <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
+                    <dt className="w-44 shrink-0 text-muted-foreground">AI endpoint</dt>
+                    <dd className="break-all font-mono text-xs sm:text-sm">{AI_PROVIDER_ENDPOINT}</dd>
+                  </div>
+                  <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
+                    <dt className="w-44 shrink-0 text-muted-foreground">Invoked through</dt>
+                    <dd className="font-mono text-xs sm:text-sm">{AI_EDGE_FUNCTION}</dd>
+                  </div>
+                </dl>
+              </section>
+            )}
 
             {/* blueprint — revealed after Save Draft */}
             {draft && (

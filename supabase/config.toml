@@ -4,3 +4,6 @@ verify_jwt = true
 
 [functions.ai-workflow-run]
 verify_jwt = true
+
+[functions.ai-agent-builder]
+verify_jwt = true
