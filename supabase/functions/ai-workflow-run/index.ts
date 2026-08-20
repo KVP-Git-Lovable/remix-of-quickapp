@@ -1186,13 +1186,19 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
+    // PostgREST/Supabase errors are plain objects, not Error instances — read
+    // their message/code so failures aren't reported as "Unknown error".
+    const pg = err as { message?: unknown; code?: unknown } | null;
     const message =
       err instanceof TogetherError
         ? `AI provider request failed (${err.code})`
         : err instanceof Error
           ? err.message
-          : "Unknown error";
+          : typeof pg?.message === "string" && pg.message
+            ? `${pg.message}${pg.code ? ` (${pg.code})` : ""}`
+            : "Unknown error";
     console.error("[ai-workflow-run] failed:", err);
+
 
     if (executionId) {
       await supabase
