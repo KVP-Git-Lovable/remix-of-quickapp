@@ -157,7 +157,14 @@ Deno.serve(async (req) => {
             },
           ],
         });
-        const text = await stream.fullText;
+        const drain = (async () => {
+          const reader = stream.tokens.getReader();
+          while (true) {
+            const { done } = await reader.read();
+            if (done) return;
+          }
+        })();
+        const [text] = await Promise.all([stream.fullText, drain]);
         const parsed = extractJson(text) as any;
         const candidate = parseWorkflowConfig({
           version: 1,
