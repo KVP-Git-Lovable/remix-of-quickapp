@@ -702,17 +702,22 @@ async function runBeatPlanner(supabase: any, userId: string) {
     .from("beats")
     .select("beat_name")
     .limit(500);
+  const byId = new Map<string, any>();
+  (ownRetailers ?? []).forEach((r: any) => byId.set(String(r.id), r));
+  const covered = new Set(
+    (ownRetailers ?? []).map((r: any) => String(r.beat_name ?? "").trim().toLowerCase()),
+  );
+  // Only the beats not already covered above, bounded so a wide-scope user
+  // never triggers a whole-table scan (that hits the statement timeout).
   const beatNames = [
     ...new Set(
       (myBeats ?? [])
         .map((b: any) => String(b.beat_name ?? "").trim())
-        .filter(Boolean),
+        .filter((n: string) => n && !covered.has(n.toLowerCase())),
     ),
-  ];
-  const byId = new Map<string, any>();
-  (ownRetailers ?? []).forEach((r: any) => byId.set(String(r.id), r));
-  for (let i = 0; i < beatNames.length; i += 40) {
-    const chunk = beatNames.slice(i, i + 40);
+  ].slice(0, 60);
+  for (let i = 0; i < beatNames.length; i += 30) {
+    const chunk = beatNames.slice(i, i + 30);
     const { data: extra } = await supabase
       .from("retailers")
       .select(RETAILER_COLS)
