@@ -69,7 +69,7 @@ interface Props {
 }
 
 export function VisitOptimizerRouteCard({ stops, totalKm, routeNote, loading, applied, onSuggestRoute, onReset }: Props) {
-  if (!loading && stops.length === 0) return null;
+  const isEmpty = !loading && stops.length === 0;
 
   const top = stops.slice(0, 5);
   const clusters = nearbyClusters(stops);
