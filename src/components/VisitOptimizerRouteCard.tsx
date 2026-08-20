@@ -121,6 +121,13 @@ export function VisitOptimizerRouteCard({ stops, totalKm, routeNote, loading, ap
           )}
         </div>
 
+        {isEmpty && (
+          <p className="mt-2.5 text-xs text-amber-950 dark:text-amber-100">
+            No visits are planned for today yet, so there is no route to optimise. Add today's
+            retailers to your plan and the suggested visiting order will appear here.
+          </p>
+        )}
+
         {!loading && stops.length > 0 && (
           <>
             <p className="mt-2.5 text-xs text-amber-950 dark:text-amber-100">
