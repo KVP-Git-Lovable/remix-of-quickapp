@@ -682,17 +682,12 @@ async function runBeatPlanner(supabase: any, userId: string) {
   const since30 = isoDate(new Date(now.getTime() - 30 * DAY_MS));
   const STOPS_PER_DAY = 25;
 
-  // RLS on retailers evaluates several per-row helper functions, so an
-  // unfiltered scan of the whole table exceeds the statement timeout. Scope to
-  // the caller's own retailers (same scoping as the visits/orders reads below),
-  // which lets the (user_id, ...) indexes narrow the rows before RLS runs.
+  // RLS scopes retailers to what the caller may see, same as the other runners.
   const { data: retailers, error } = await supabase
     .from("retailers")
     .select("id, name, beat_name, priority, pending_amount, last_visit_date, created_at")
-    .eq("user_id", userId)
     .limit(3000);
   if (error) throw error;
-
 
   if (!(retailers ?? []).length) {
     return {
@@ -788,7 +783,9 @@ async function runBeatPlanner(supabase: any, userId: string) {
       newRetailers: b.newRetailers,
     }))
     .sort((a, b) => a.coveragePct - b.coveragePct || b.retailers - a.retailers)
-    .slice(0, 12);
+    // Stored rows feed the per-beat card one-liners, so keep more than the
+    // narration needs; the facts block below stays at 12.
+    .slice(0, 40);
 
   const totalRetailers = (retailers ?? []).length;
 
@@ -799,6 +796,7 @@ async function runBeatPlanner(supabase: any, userId: string) {
     "",
     "### Beats ordered by lowest coverage first",
     rows
+      .slice(0, 12)
       .map(
         (b) =>
           `- ${b.beat}: ${b.retailers} retailers, ${b.visited30d} visited in 30d (${b.coveragePct}% coverage), ` +
@@ -1198,7 +1196,6 @@ Deno.serve(async (req) => {
             ? `${pg.message}${pg.code ? ` (${pg.code})` : ""}`
             : "Unknown error";
     console.error("[ai-workflow-run] failed:", err);
-
 
     if (executionId) {
       await supabase
