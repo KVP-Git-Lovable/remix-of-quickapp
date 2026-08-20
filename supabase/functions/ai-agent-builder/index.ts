@@ -5,8 +5,40 @@
 // it in public.ai_workflows using the caller's RLS-scoped client (so the
 // admin-only insert policy remains the single source of truth).
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { z } from "npm:zod@3.23.8";
 import { streamChat, TogetherError } from "../_shared/together/togetherClient.ts";
-import { parseWorkflowConfig } from "../ai-workflow-run/customWorkflow.ts";
+
+// NOTE: the Supabase bundler only uploads this function's own directory plus
+// `_shared`, so `../ai-workflow-run/customWorkflow.ts` cannot be imported here.
+// This schema is the same contract that file's WorkflowConfigSchema enforces,
+// restated verbatim so runs validate identically. That file is untouched.
+const BLOCK_KEYS = [
+  "declining_retailers",
+  "top_retailers",
+  "pending_dues",
+  "beat_coverage",
+  "product_mix",
+  "visit_productivity",
+] as const;
+
+const WorkflowConfigSchema = z.object({
+  version: z.literal(1),
+  blocks: z
+    .array(z.object({
+      type: z.enum(BLOCK_KEYS),
+      params: z.record(z.number()).default({}),
+    }))
+    .min(1)
+    .max(3),
+  narration: z.object({
+    focus: z.string().max(500),
+    tone: z.enum(["encouraging", "direct", "formal"]),
+  }),
+});
+
+function parseWorkflowConfig(raw: unknown) {
+  return WorkflowConfigSchema.parse(raw);
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
