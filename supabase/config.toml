@@ -1,3 +1,6 @@
 project_id = "ihdkqgiesgichzgrqocc"
 [functions.ai-pitch-suggestions]
 verify_jwt = true
+
+[functions.ai-workflow-run]
+verify_jwt = true
