@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Calendar as CalendarIcon, FileText, Plus, TrendingUp, Route, CheckCircle, CalendarDays, MapPin, Users, Clock, Truck, ArrowUpDown, RefreshCw, Download, Sparkles, Loader2, BarChart3 } from "lucide-react";
 import { ModuleHelpButton } from "@/components/help/ModuleHelpButton";
+
 import { CompactMultiUserSelector } from "@/components/CompactMultiUserSelector";
 import { PointsDetailsModal } from "@/components/PointsDetailsModal";
 import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, addWeeks, subWeeks, differenceInDays } from "date-fns";
@@ -41,12 +43,6 @@ import { useProfilePermissions } from "@/hooks/useProfilePermissions";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { getLocalTodayDate, toLocalISODate } from "@/utils/dateUtils";
-import { useChurnRisk, type ChurnRow } from "@/hooks/useChurnRisk";
-import { useVisitOptimizerInsights, type RouteStop } from "@/hooks/useVisitOptimizerInsights";
-import { useSalesCoachInsights, type CoachRow } from "@/hooks/useSalesCoachInsights";
-import type { VisitAiInsight } from "@/components/VisitCard";
-import { prefetchPitchSuggestions } from "@/utils/pitchSuggestionsCache";
-import { VisitOptimizerRouteCard } from "@/components/VisitOptimizerRouteCard";
 import { SyncDataModal } from "@/components/SyncDataModal";
 import { InsightsPanel } from "@/components/visits/InsightsPanel";
 import { CarryForwardBanner } from "@/components/visits/CarryForwardBanner";
@@ -58,6 +54,12 @@ import { ActivityEventsTable } from "@/components/ActivityEventsTable";
 
 import { ActivityVisitDetail } from "@/components/ActivityVisitDetail";
 import { useActivityVisits } from "@/hooks/useActivityVisits";
+import { useChurnRisk, type ChurnRow } from "@/hooks/useChurnRisk";
+import { useVisitOptimizerInsights, type RouteStop } from "@/hooks/useVisitOptimizerInsights";
+import { useSalesCoachInsights, type CoachRow } from "@/hooks/useSalesCoachInsights";
+import { prefetchPitchSuggestions } from "@/utils/pitchSuggestionsCache";
+import { VisitOptimizerRouteCard } from "@/components/VisitOptimizerRouteCard";
+import type { VisitAiInsight } from "@/components/VisitCard";
 
 // UI display bar only: which detected declines are worth surfacing on a
 // visit card. Unrelated to (and must never alter) the Churn Detector's own
@@ -243,6 +245,7 @@ export const MyVisits = () => {
   const {
     t
   } = useTranslation();
+  const { format: formatMoney } = useCurrency();
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -337,7 +340,6 @@ export const MyVisits = () => {
    const activityViewUserId = isViewingSelf ? user?.id : selectedUserIds[0];
    const { items: activityVisitCards, refresh: refreshActivityVisits } = useActivityVisits(activityViewUserId, selectedDate);
    const [detailActivity, setDetailActivity] = useState<import('@/hooks/useActivityVisits').ActivityVisitCardModel | null>(null);
-
 
   // One-time fix: Restore cancelled visits to planned if day hasn't ended
   useEffect(() => {
@@ -437,15 +439,16 @@ export const MyVisits = () => {
   // Visit Optimiser (today's scored stops + newcomer pitch lines) and Sales
   // Coach (per-retailer 30d product mix), consumed from their stored runs
   // (display only — the hooks own any run policy, this page never triggers).
-  // When viewing self on today, the day's visit retailer ids are passed so
-  // the optimiser refreshes as soon as a retailer/beat is added to or
-  // removed from today's visits, instead of keeping a stale route.
+  // When viewing self on today, the FULL displayed retailer set is passed
+  // (all retailers of the day's planned beats, not just those with visit
+  // rows) so the optimiser routes everything the list shows and refreshes
+  // as soon as a retailer/beat is added to or removed from the day's plan.
   const expectedRouteRetailerIds = useMemo(() => {
     if (!isViewingSelf || selectedDate !== getLocalTodayDate()) return null;
-    return optimizedVisits
-      .filter((v) => v.planned_date === selectedDate && v.retailer_id)
-      .map((v) => String(v.retailer_id));
-  }, [isViewingSelf, selectedDate, optimizedVisits]);
+    // The COMPLETE displayed set, uncapped — the optimizer's candidate-set
+    // invariant is that it routes every retailer on this list.
+    return [...new Set(optimizedRetailers.map((r: any) => String(r.id)).filter(Boolean))].sort();
+  }, [isViewingSelf, selectedDate, optimizedRetailers]);
   const {
     newRetailers: newcomerRows,
     stops: routeStops,
@@ -572,6 +575,8 @@ export const MyVisits = () => {
         status = 'planned';
       }
       
+      // Churn nudge (display only): retailer flagged by the stored Churn
+      // Detector run, drop at/above the UI threshold, and not newly created.
       // One AI insight per card, most specific first: new retailer (AI pitch
       // line) → churn nudge → today's Visit Optimiser stop → Sales Coach
       // product-mix tip. All lines derive from the stored agent runs.
@@ -622,7 +627,16 @@ export const MyVisits = () => {
         carriedFromDate: (visit as any)?.carried_from_date || undefined,
         isRescheduled: !!(visit as any)?.is_rescheduled,
         rescheduledFromDate: (visit as any)?.rescheduled_from_date || undefined,
+        pendingSync: !!(retailer as any)?._pendingSync,
       };
+    });
+
+    // Pending-sync (offline-created) retailers float to the top so the user
+    // can act on them immediately without waiting for the network round-trip.
+    transformedRetailers.sort((a: any, b: any) => {
+      const ap = a.pendingSync ? 1 : 0;
+      const bp = b.pendingSync ? 1 : 0;
+      return bp - ap;
     });
 
     // Store only the transformed shape, scoped to this date. Deferring avoids
@@ -917,7 +931,7 @@ export const MyVisits = () => {
       setTimelineVisits(timelineData);
     } catch (error) {
       console.error('Error loading timeline visits:', error);
-      toast.error('Failed to load timeline data');
+      toast.error(t('visits.timelineLoadFailed'));
     }
   };
 
@@ -1255,33 +1269,52 @@ export const MyVisits = () => {
         setBackdateApprovalReason('');
         setBackdateApprovalPrompt({ isoDate });
       } else {
-        toast.info("Backdating isn't allowed for this date — showing past data (view only)");
+        toast.info(t('visits.backdateNotAllowed'));
       }
       return true;
     } catch (e: any) {
       try { sessionStorage.removeItem('backdated_order_context'); } catch {}
-      toast.info('Could not verify backdate permission — showing past data (view only)');
+      toast.info(t('visits.backdateUnverified'));
       return true;
     }
   }, [backdateCfg]);
+
+  // Keep the backdate context in step with the date being viewed, however it
+  // was reached — hand-picked, deep link, or returning from the cart with
+  // ?date= after a backdated order. A past date with a context already
+  // validated for it is left alone (so the post-order return trip doesn't
+  // re-run the RPC); a past date without one gets validated; any other date
+  // makes a lingering past-date context stale, so it is dropped.
+  useEffect(() => {
+    const today = getLocalTodayDate();
+    if (selectedDate >= today) {
+      try { sessionStorage.removeItem('backdated_order_context'); } catch {}
+      return;
+    }
+    try {
+      const raw = sessionStorage.getItem('backdated_order_context');
+      if (raw && JSON.parse(raw)?.date === selectedDate) return;
+    } catch {}
+    applyBackdateContext(selectedDate);
+  }, [selectedDate, applyBackdateContext]);
 
   const submitBackdateApprovalRequest = useCallback(async () => {
     if (!backdateApprovalPrompt) return;
     const iso = backdateApprovalPrompt.isoDate;
     const reason = backdateApprovalReason.trim();
     if (backdateCfg.requireReason && !reason) {
-      toast.error('Please provide a reason');
+      toast.error(t('visits.provideReason'));
       return;
     }
     setBackdateApprovalSubmitting(true);
     try {
       const { error } = await supabase.rpc('request_backdate' as any, { p_date: iso, p_reason: reason || null });
       if (error) throw error;
-      toast.success('Request sent to your manager');
+      toast.success(t('visits.requestSent'));
       setBackdateApprovalPrompt(null);
       setBackdateApprovalReason('');
     } catch (e: any) {
-      toast.error(e?.message || 'Could not send request');
+      toast.error(e?.message || t('visits.requestFailed'));
     } finally {
       setBackdateApprovalSubmitting(false);
     }
@@ -1453,6 +1486,10 @@ export const MyVisits = () => {
     // Apply sorting
     const routeSortActive = routeApplied && selectedDate === getLocalTodayDate();
     return filtered.sort((a, b) => {
+      // Pending-sync (offline-created) retailers always float to the top
+      const ap = (a as any).pendingSync ? 1 : 0;
+      const bp = (b as any).pendingSync ? 1 : 0;
+      if (ap !== bp) return bp - ap;
       // Suggested route applied: follow the Visit Optimiser stop order.
       // Retailers the run doesn't cover keep their place after the route.
       if (routeSortActive) {
@@ -1672,7 +1709,7 @@ export const MyVisits = () => {
               const allBeatEnabled = isBackdateAllowedForDate(selectedDate);
               const row1Buttons = [
                 showAutoPlan && (
-                  <Button key="auto-plan" variant="secondary" size="sm" className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20 text-[10px] sm:text-sm h-8 sm:h-9 px-1.5 sm:px-3" onClick={handleAutoGeneratePlan} disabled={isGeneratingPlan} title="AI generates optimized weekly beat plans">
+                  <Button key="auto-plan" variant="secondary" size="sm" className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20 text-[10px] sm:text-sm h-8 sm:h-9 px-1.5 sm:px-3" onClick={handleAutoGeneratePlan} disabled={isGeneratingPlan} title={t('visits.autoPlanHint')}>
                     {isGeneratingPlan ? <Loader2 size={12} className="mr-1 sm:mr-1.5 animate-spin" /> : <Sparkles size={12} className="mr-1 sm:mr-1.5" />}
                     <span className="whitespace-nowrap">{isGeneratingPlan ? t('visits.planning') : t('visits.autoPlan')}</span>
                   </Button>
@@ -1719,7 +1756,7 @@ export const MyVisits = () => {
                 showActivity && (
                   <Button key="activity" variant="secondary" size="sm" className="relative bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20 text-[9px] sm:text-sm h-8 sm:h-9 px-1 sm:px-3" onClick={() => setIsActivityModalOpen(true)}>
                     <Sparkles size={12} className="mr-0.5 sm:mr-1.5 flex-shrink-0" />
-                    <span className="truncate">Activity</span>
+                    <span className="truncate">{t('visits.activity')}</span>
                     {overdueFollowUpCount > 0 && (
                       <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[9px] flex items-center justify-center rounded-full">
                         {overdueFollowUpCount}
@@ -1791,7 +1828,7 @@ export const MyVisits = () => {
                   onClick={() => {
                     if (!user?.id) return;
                     if (!navigator.onLine || networkStatus === 'offline') {
-                      toast.error('Cannot sync while offline');
+                      toast.error(t('visits.cannotSyncOffline'));
                       return;
                     }
                     setShowSyncModal(true);
@@ -1837,11 +1874,11 @@ export const MyVisits = () => {
                 
                 {/* Row 3: Total Order Value, Points Earned */}
                <button onClick={() => navigate(`/today-summary?date=${selectedDate}`)} className="bg-gradient-to-r from-success/10 to-success/5 p-2 sm:p-3 rounded-lg border border-success/20 cursor-pointer hover:from-success/15 hover:to-success/10 transition-all flex flex-col items-center justify-center text-center min-h-[70px] sm:min-h-[85px]">
-                 <div className="text-base sm:text-xl font-bold text-success leading-tight">₹{Math.round(totalOrderValue).toLocaleString()}</div>
+                 <div className="text-base sm:text-xl font-bold text-success leading-tight">{formatMoney(Math.round(totalOrderValue))}</div>
                  <div className="text-[9px] sm:text-xs text-success/80 font-medium mt-1 leading-tight">{t('visits.totalOrderValue')}</div>
                  {teamOrderValue > 0 && (
                    <div className="text-[9px] sm:text-[10px] font-medium text-success/70 mt-0.5 leading-tight">
-                     ₹{Math.round(mineOrderValue).toLocaleString()} mine · ₹{Math.round(teamOrderValue).toLocaleString()} team
+                     {formatMoney(Math.round(mineOrderValue))} mine · {formatMoney(Math.round(teamOrderValue))} team
                    </div>
                  )}
                </button>
@@ -1879,7 +1916,7 @@ export const MyVisits = () => {
                     variant="outline"
                     size="sm"
                     className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 hover:from-primary/15 hover:to-primary/10 h-9 w-9 p-0 flex-shrink-0"
-                    title="Sort Alphabetically"
+                    title={t('visits.sortAlphabetically')}
                   >
                     <ArrowUpDown className="h-4 w-4" />
                   </Button>
@@ -1919,7 +1956,7 @@ export const MyVisits = () => {
                   <div className="h-4 w-32 mx-auto mb-2 bg-muted rounded" />
                   <div className="h-3 w-48 mx-auto bg-muted rounded" />
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">Loading visits...</p>
+                <p className="text-xs text-muted-foreground mt-3">{t('visits.loadingVisits')}</p>
               </CardContent>
             </Card>
           )}
@@ -1959,6 +1996,7 @@ export const MyVisits = () => {
           {/* Activity Events Table - shown above visit list, ONLY after parent data loads to prevent flicker */}
           {hasLoadedOnce && (isViewingSelf ? user?.id : selectedUserIds[0]) && (
             <ActivityEventsTable
+              canEditEvent={can('action_activity_edit', 'edit')}
               userId={isViewingSelf ? user!.id : selectedUserIds[0]}
               selectedDate={selectedDate}
               onActivitiesLoaded={(count) => setHasActivities(count > 0)}
@@ -2020,22 +2058,22 @@ export const MyVisits = () => {
                 Request approval to backdate to {backdateApprovalPrompt?.isoDate}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                This date is beyond the auto-allowed limit. Send a request to your manager.
+                {t('visits.backdateRequestDesc')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {backdateCfg.requireReason && (
               <div className="py-2">
-                <label className="text-sm font-medium">Reason</label>
+                <label className="text-sm font-medium">{t('visits.reason')}</label>
                 <textarea
                   className="mt-1 w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={backdateApprovalReason}
                   onChange={(e) => setBackdateApprovalReason(e.target.value)}
-                  placeholder="Why do you need to backdate this order?"
+                  placeholder={t('visits.backdateReasonPlaceholder')}
                 />
               </div>
             )}
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={backdateApprovalSubmitting}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={backdateApprovalSubmitting}>{t('common.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={(e) => { e.preventDefault(); submitBackdateApprovalRequest(); }}
                 disabled={backdateApprovalSubmitting}
@@ -2071,7 +2109,7 @@ export const MyVisits = () => {
                             </p>
                           </div>
                           <Badge variant="secondary" className="bg-success/10 text-success text-xs sm:text-sm">
-                            ₹{Number(order.total_amount).toLocaleString()}
+                            {formatMoney(Number(order.total_amount))}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -2092,8 +2130,8 @@ export const MyVisits = () => {
                                   {order.order_items.map((item: any) => <TableRow key={item.id}>
                                       <TableCell className="text-xs sm:text-sm break-words">{item.product_name}</TableCell>
                                       <TableCell className="text-xs sm:text-sm">{item.quantity} {item.unit}</TableCell>
-                                      <TableCell className="text-xs sm:text-sm">₹{Number(item.rate).toFixed(2)}</TableCell>
-                                      <TableCell className="text-xs sm:text-sm text-right">₹{Number(item.total).toFixed(0)}</TableCell>
+                                      <TableCell className="text-xs sm:text-sm">{formatMoney(Number(item.rate))}</TableCell>
+                                      <TableCell className="text-xs sm:text-sm text-right">{formatMoney(Number(item.total))}</TableCell>
                                     </TableRow>)}
                                 </TableBody>
                               </Table>
@@ -2146,13 +2184,13 @@ export const MyVisits = () => {
         <AlertDialog open={showClearCacheDialog} onOpenChange={setShowClearCacheDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Clear Local Cache?</AlertDialogTitle>
+              <AlertDialogTitle>{t('visits.clearCacheTitle')}</AlertDialogTitle>
               <AlertDialogDescription>
-                This will clear all locally cached data and reload the page. Make sure you have a stable internet connection before proceeding.
+                {t('visits.clearCacheDesc')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 onClick={async () => {
@@ -2166,17 +2204,17 @@ export const MyVisits = () => {
                     await Preferences.remove({ key: snapshotKey });
                     await Preferences.remove({ key: 'visit_status_cache' });
                     
-                    toast.success('Cache cleared - data refreshed');
+                    toast.success(t('visits.cacheCleared'));
                     invalidateData?.();
                     // Dispatch global refresh event instead of full page reload
                     window.dispatchEvent(new CustomEvent('globalDataRefresh', { detail: { source: 'cacheClear' } }));
                   } catch (err) {
                     console.error('Cache clear error:', err);
-                    toast.error('Failed to clear cache');
+                    toast.error(t('visits.cacheClearFailed'));
                   }
                 }}
               >
-                Clear Cache
+                {t('visits.clearCache')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -2188,7 +2226,7 @@ export const MyVisits = () => {
           onClose={() => setShowSyncModal(false)}
           onComplete={() => {
             invalidateData?.();
-            toast.success('Data synced successfully!');
+            toast.success(t('visits.syncSuccess'));
           }}
         />
       </div>
